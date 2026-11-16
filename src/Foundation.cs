@@ -11,8 +11,11 @@ namespace PsionClass
         internal static void Grant(Chara c)
         {
             int lv = c.elements.ValueWithoutLink(PsionData.Psicraft);
-            foreach (var (need, id) in PsionData.Unlocks)
+            foreach (var (_, id) in PsionData.Unlocks)
             {
+                int need = PowerConfig.Level(c, id);
+                // A raised unlock level takes the power back (same as switching it off; its level is kept).
+                if (lv < need && c.IsPC && c.ability.Has(id)) { c.ability.Remove(id); continue; }
                 if (lv < need || c.ability.Has(id) || !PowerConfig.Enabled(c, id)) continue;
                 Element absorbed = null;
                 if (PsionData.KineticSource.TryGetValue(id, out var vanillaAlias))
@@ -40,6 +43,27 @@ namespace PsionClass
         static HashSet<int> Disabled(Chara c) =>
             new HashSet<int>((c.GetStr(Key) ?? "").Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(int.Parse));
         internal static bool Enabled(Chara c, int id) => !Disabled(c).Contains(id);
+        const string KeyLevels = "psion_unlock_levels"; // "id:lv,..." overrides
+        static Dictionary<int, int> Levels(Chara c)
+        {
+            var d = new Dictionary<int, int>();
+            foreach (var part in (c.GetStr(KeyLevels) ?? "").Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                var kv = part.Split(':');
+                if (kv.Length == 2 && int.TryParse(kv[0], out int id) && int.TryParse(kv[1], out int lv)) d[id] = lv;
+            }
+            return d;
+        }
+        internal static int DefaultLevel(int id) => PsionData.Unlocks.First(u => u.id == id).lv;
+        internal static int Level(Chara c, int id) => Levels(c).TryGetValue(id, out int lv) ? lv : DefaultLevel(id);
+        internal static void SetLevel(Chara c, int id, int lv)
+        {
+            var d = Levels(c);
+            if (lv == DefaultLevel(id)) d.Remove(id); else d[id] = lv;
+            c.SetStr(KeyLevels, d.Count == 0 ? null : string.Join(",", d.Select(kv => kv.Key + ":" + kv.Value)));
+            Powers.Grant(c);
+            LayerAbility.Redraw();
+        }
         internal static void Toggle(Chara c, int id)
         {
             var d = Disabled(c);

@@ -16,7 +16,7 @@ namespace PsionClass
             public string Label, Value;
             public bool Heading, Note;
             public bool? Checked;
-            public Action<Row> Click;
+            public Action<Row> Click, ValueClick;
             public bool NeedsAuto, Indent;
             public int Group; // 1 = box top, 2 = inside, 3 = box bottom
             public ItemGeneral Bound;
@@ -48,12 +48,13 @@ namespace PsionClass
                 rows.Add(new Row { Group = i == kinds.Length - 1 ? 3 : 2, NeedsAuto = true, Indent = true, Label = PsionCombat.BystanderLabel(kind), Checked = PsionCombat.Blocks(pc, kind),
                     Click = r => { PsionCombat.ToggleBlock(pc, kind); r.Checked = PsionCombat.Blocks(pc, kind); if (r.Mark) r.Mark.gameObject.SetActive(r.Checked.Value); } });
             }
-            rows.Add(new Row { Heading = true, Label = UiText.Pick("Powers (checked = innate, no spell stock)", "能力(チェック=生得、ストック不要)", "能力(勾选=天生,无需储备)") });
+            rows.Add(new Row { Heading = true, Label = UiText.Pick("Powers (checked = innate, no spell stock; click a level to change it)", "能力(チェック=生得、ストック不要。レベルをクリックで変更)", "能力(勾选=天生,无需储备;点击等级可修改)") });
             foreach (var (lv, id) in PsionData.Unlocks.GroupBy(u => u.id).Select(g => g.First()))
                 rows.Add(new Row
                 {
                     Label = EClass.sources.elements.map[id].GetName().ToTitleCase(),
-                    Value = UiText.Pick("Psicraft ", "サイクラフト", "灵能术") + lv,
+                    Value = UiText.Pick("Psicraft ", "サイクラフト", "灵能术") + PowerConfig.Level(pc, id),
+                    ValueClick = r => EditLevel(r, id),
                     Checked = PowerConfig.Enabled(pc, id),
                     Click = r => { PowerConfig.Toggle(pc, id); r.Checked = PowerConfig.Enabled(pc, id); if (r.Mark) r.Mark.gameObject.SetActive(r.Checked.Value); },
                 });
@@ -117,6 +118,19 @@ namespace PsionClass
             vr.offsetMin = new Vector2(10, 0); vr.offsetMax = new Vector2(-8, 0);
             value.text = row.Value; value.fontStyle = FontStyle.Normal;
             row.ValueText = value;
+            if (row.ValueClick != null)
+            {
+                // Separate click target over the value cell (inked panel like Logistics action buttons).
+                var cell = new GameObject("Psion value button", typeof(RectTransform), typeof(Image), typeof(Button), typeof(LayoutElement));
+                cell.GetComponent<LayoutElement>().ignoreLayout = true;
+                var cr = (RectTransform)cell.transform; cr.SetParent(button.transform, false);
+                cr.anchorMin = new Vector2(.62f, 0); cr.anchorMax = new Vector2(1, 1); cr.offsetMin = new Vector2(4, 3); cr.offsetMax = new Vector2(-4, -3);
+                var ci = cell.GetComponent<Image>(); ci.color = new Color(.38f, .28f, .16f, .14f);
+                var co = cell.AddComponent<Outline>(); co.effectColor = new Color(.38f, .28f, .16f, .35f); co.effectDistance = new Vector2(1, -1);
+                cell.GetComponent<Button>().targetGraphic = ci;
+                cell.GetComponent<Button>().onClick.AddListener(() => row.ValueClick(row));
+                value.transform.SetAsLastSibling(); value.raycastTarget = false;
+            }
         }
 
         static LayerList current;
@@ -198,6 +212,24 @@ namespace PsionClass
                     }
                     PsionCombat.SetTkMpMult(pc, v);
                     SetValue(row, "x" + Fmt(v));
+                }, Dialog.InputType.Default);
+        }
+
+        // Whole number 1-999. Invalid input is dropped and the old value kept.
+        static void EditLevel(Row row, int id)
+        {
+            var pc = EClass.pc;
+            Modals.Input(UiText.Pick("Psicraft level that unlocks ", "解放するサイクラフトのレベル: ", "解锁所需灵能术等级: ") + EClass.sources.elements.map[id].GetName() + " (1-999)",
+                PowerConfig.Level(pc, id).ToString(), (cancel, text) =>
+                {
+                    if (cancel) return;
+                    if (!int.TryParse((text ?? "").Trim(), out int lv) || lv < 1 || lv > 999)
+                    {
+                        Msg.Say(UiText.Pick("Not a valid level (1 to 999). Kept ", "無効なレベルです(1～999)。", "等级无效(1至999)。保留") + PowerConfig.Level(pc, id) + UiText.Pick(".", "のままです。", "。"));
+                        return;
+                    }
+                    PowerConfig.SetLevel(pc, id, lv);
+                    SetValue(row, UiText.Pick("Psicraft ", "サイクラフト", "灵能术") + lv);
                 }, Dialog.InputType.Default);
         }
 

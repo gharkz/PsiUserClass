@@ -45,7 +45,8 @@ namespace PsionClass
         static IEnumerable<string> Awakening(Chara pc)
         {
             bool live = pc != null && EClass.core.IsGameStarted;
-            foreach (var g in PsionData.Unlocks.GroupBy(u => u.lv).OrderBy(g => g.Key))
+            var levels = PsionData.Unlocks.GroupBy(u => u.id).Select(x => (lv: live ? PowerConfig.Level(pc, x.Key) : x.First().lv, id: x.Key));
+            foreach (var g in levels.GroupBy(u => u.lv).OrderBy(x => x.Key))
             {
                 var names = g.Select(u =>
                 {

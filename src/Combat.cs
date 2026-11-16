@@ -31,11 +31,12 @@ namespace PsionClass
         internal static readonly int[] PowerIds = PsionData.Unlocks.Select(u => u.id).Distinct().ToArray();
 
         // Which non-hostile bystanders block auto-combat Telekinesis when on the travel path (all on by default).
-        internal enum Bystander { Allies = 0, NeutralCreatures = 1, NeutralNpcs = 2, FriendlyNpcs = 3 }
+        internal enum Bystander { Allies = 0, NeutralCreatures = 1, NeutralNpcs = 2, FriendlyNpcs = 3, Evolved = 4, BigDaddy = 5 }
         const string KeyPassThrough = "psion_tk_passthrough"; // bystander kinds allowed in the path (unchecked)
         static HashSet<int> PassThrough(Chara c) =>
             new HashSet<int>((c.GetStr(KeyPassThrough) ?? "").Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(int.Parse));
-        internal static bool Blocks(Chara c, Bystander k) => !PassThrough(c).Contains((int)k);
+        static bool DefaultOn(Bystander k) => k <= Bystander.FriendlyNpcs;
+        internal static bool Blocks(Chara c, Bystander k) => DefaultOn(k) != PassThrough(c).Contains((int)k);
         internal static void ToggleBlock(Chara c, Bystander k)
         {
             var set = PassThrough(c);
@@ -47,9 +48,17 @@ namespace PsionClass
             Bystander.Allies => UiText.Pick("Allies (party and their summons)", "味方(仲間と召喚物)", "友方(队友及其召唤物)"),
             Bystander.NeutralCreatures => UiText.Pick("Neutral animals and monsters", "中立の動物・モンスター", "中立的动物与怪物"),
             Bystander.NeutralNpcs => UiText.Pick("Neutral NPCs", "中立のNPC", "中立NPC"),
-            _ => UiText.Pick("Friendly NPCs", "友好的なNPC", "友好NPC"),
+            Bystander.FriendlyNpcs => UiText.Pick("Friendly NPCs", "友好的なNPC", "友好NPC"),
+            Bystander.Evolved => UiText.Pick("Evolved monsters (even if hostile)", "進化した魔物(敵対中も)", "进化的怪物(即使敌对)"),
+            _ => UiText.Pick("Big Daddy (even if hostile)", "ビッグダディ(敵対中も)", "大老爹(即使敌对)"),
         };
         // Classify a non-hostile character on the path; null = hostile (never blocks).
+        internal static IEnumerable<Bystander> Kinds(Chara caster, Chara ch)
+        {
+            if (ch.c_bossType == BossType.Evolved) yield return Bystander.Evolved;
+            if (ch.id == "big_daddy" || ch.id == "big_daddy2") yield return Bystander.BigDaddy;
+            if (Kind(caster, ch) is Bystander k) yield return k;
+        }
         internal static Bystander? Kind(Chara caster, Chara ch)
         {
             if (ch.IsHostile(caster)) return null;
@@ -92,7 +101,7 @@ namespace PsionClass
             // ListPath is mode-correct: a pull lists the squares between target and caster (never past the target);
             // a hurl lists the squares beyond the target. Check only the path this cast will travel.
             foreach (var p in __instance.ListPath(cc.pos, tc.pos))
-                if (!p.Equals(tc.pos) && p.ListCharas().Any(ch => ch != cc && ch != tc && PsionCombat.Kind(cc, ch) is PsionCombat.Bystander k && PsionCombat.Blocks(cc, k)))
+                if (!p.Equals(tc.pos) && p.ListCharas().Any(ch => ch != cc && ch != tc && PsionCombat.Kinds(cc, ch).Any(k => PsionCombat.Blocks(cc, k))))
                 { __result = false; return; }
         }
     }
@@ -224,7 +233,8 @@ namespace PsionClass
         static void Postfix(Element __instance, Chara c, ref Act.Cost __result)
         {
             if (__instance.id != PsionData.Telekinesis || c == null || !c.HasElement(PsionData.FeatPsion) || __result.type != Act.CostType.MP) return;
-            __result.cost = (int)Math.Floor(__result.cost * PsionCombat.TkMpMult(c));
+            float m = PsionCombat.TkMpMult(c);
+            __result.cost = m <= 0 ? 0 : Math.Max(1, (int)Math.Floor(__result.cost * m));
         }
     }
 }
