@@ -35,7 +35,7 @@ namespace PsionClass
         const string KeyPassThrough = "psion_tk_passthrough"; // bystander kinds allowed in the path (unchecked)
         static HashSet<int> PassThrough(Chara c) =>
             new HashSet<int>((c.GetStr(KeyPassThrough) ?? "").Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(int.Parse));
-        static bool DefaultOn(Bystander k) => k <= Bystander.FriendlyNpcs;
+        static bool DefaultOn(Bystander k) => true;
         internal static bool Blocks(Chara c, Bystander k) => DefaultOn(k) != PassThrough(c).Contains((int)k);
         internal static void ToggleBlock(Chara c, Bystander k)
         {
@@ -49,14 +49,15 @@ namespace PsionClass
             Bystander.NeutralCreatures => UiText.Pick("Neutral animals and monsters", "中立の動物・モンスター", "中立的动物与怪物"),
             Bystander.NeutralNpcs => UiText.Pick("Neutral NPCs", "中立のNPC", "中立NPC"),
             Bystander.FriendlyNpcs => UiText.Pick("Friendly NPCs", "友好的なNPC", "友好NPC"),
-            Bystander.Evolved => UiText.Pick("Evolved monsters (even if hostile)", "進化した魔物(敵対中も)", "进化的怪物(即使敌对)"),
-            _ => UiText.Pick("Big Daddy (even if hostile)", "ビッグダディ(敵対中も)", "大老爹(即使敌对)"),
+            Bystander.Evolved => UiText.Pick("Evolved monsters", "進化した魔物", "进化的怪物"),
+            _ => UiText.Pick("Big Daddy", "ビッグダディ", "大老爹"),
         };
         // Classify a non-hostile character on the path; null = hostile (never blocks).
         internal static IEnumerable<Bystander> Kinds(Chara caster, Chara ch)
         {
+            if (ch.IsHostile(caster)) yield break; // hostiles are always fair game
             if (ch.c_bossType == BossType.Evolved) yield return Bystander.Evolved;
-            if (ch.id == "big_daddy" || ch.id == "big_daddy2") yield return Bystander.BigDaddy;
+            if (ch.id.StartsWith("big_daddy", StringComparison.Ordinal)) yield return Bystander.BigDaddy; // every variant
             if (Kind(caster, ch) is Bystander k) yield return k;
         }
         internal static Bystander? Kind(Chara caster, Chara ch)
@@ -71,6 +72,18 @@ namespace PsionClass
             float.TryParse(c.GetStr(KeyTkMp), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float v) && v >= 0 ? v : 0.5f;
         internal static void SetTkMpMult(Chara c, float v) =>
             c.SetStr(KeyTkMp, Math.Abs(v - 0.5f) < 0.0001f ? null : v.ToString("R", System.Globalization.CultureInfo.InvariantCulture));
+        const string KeyDmgOnly = "psion_tk_dmgonly", KeyCombo = "psion_tk_combo";
+        internal static bool DamageOnly(Chara c) => !string.IsNullOrEmpty(c.GetStr(KeyDmgOnly));
+        internal static void SetDamageOnly(Chara c, bool on) => c.SetStr(KeyDmgOnly, on ? "1" : null);
+        internal static bool Combo(Chara c) => !string.IsNullOrEmpty(c.GetStr(KeyCombo));
+        internal static void SetCombo(Chara c, bool on) => c.SetStr(KeyCombo, on ? "1" : null);
+        // A pull lands the target on the path's last square (beside the caster); a hurl from there needs room beyond it.
+        internal static bool PullSetsUpHurl(ActTelekinesis tk, Chara cc, List<Point> pullPath)
+        {
+            if (pullPath.Count == 0) return false;
+            var landing = pullPath[pullPath.Count - 1];
+            return landing.Distance(cc.pos) == 1 && tk.ListPath(cc.pos, landing).Count > 1;
+        }
         internal static void OpenConfig() => SettingsUi.Open();
     }
 
@@ -100,7 +113,13 @@ namespace PsionClass
             { __result = false; return; }
             // ListPath is mode-correct: a pull lists the squares between target and caster (never past the target);
             // a hurl lists the squares beyond the target. Check only the path this cast will travel.
-            foreach (var p in __instance.ListPath(cc.pos, tc.pos))
+            var path = __instance.ListPath(cc.pos, tc.pos);
+            // Damage-only: hurls always deal collision damage; a pull deals none, so it is allowed only as a
+            // Pull-and-hurl setup whose landing square leaves room for the follow-up hurl.
+            if (PsionCombat.DamageOnly(cc) && !adjacent &&
+                !(mode == PsionCombat.TkMode.Both && PsionCombat.Combo(cc) && PsionCombat.PullSetsUpHurl(__instance, cc, path)))
+            { __result = false; return; }
+            foreach (var p in path)
                 if (!p.Equals(tc.pos) && p.ListCharas().Any(ch => ch != cc && ch != tc && PsionCombat.Kinds(cc, ch).Any(k => PsionCombat.Blocks(cc, k))))
                 { __result = false; return; }
         }

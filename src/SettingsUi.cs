@@ -18,6 +18,7 @@ namespace PsionClass
             public bool? Checked;
             public Action<Row> Click, ValueClick;
             public bool NeedsAuto, Indent;
+            public Func<bool> Disabled;
             public int Group; // 1 = box top, 2 = inside, 3 = box bottom
             public ItemGeneral Bound;
             public FilterCheckmark Mark;
@@ -39,6 +40,11 @@ namespace PsionClass
                 new Row { Label = UiText.Pick("Collision dice sides multiplier", "衝突ダイス面数の倍率", "碰撞骰面数倍率"), Value = "x" + Fmt(PsionCombat.TkDiceMult(pc)), Click = EditDice },
                 new Row { Group = 1, Heading = true, Label = UiText.Pick("Auto-combat Telekinesis", "自動戦闘でのテレキネシス", "自动战斗中的念动术") },
                 new Row { Group = 2, Label = UiText.Pick("Use", "使用", "使用"), Value = PsionCombat.Label(PsionCombat.Tk), Click = ChooseTkMode },
+                new Row { Group = 2, NeedsAuto = true, Label = UiText.Pick("Only when it deals collision damage", "衝突ダメージを与える時のみ", "仅在造成碰撞伤害时"), Checked = PsionCombat.DamageOnly(pc),
+                    Click = r => { PsionCombat.SetDamageOnly(pc, !PsionCombat.DamageOnly(pc)); Reopen(); } },
+                new Row { Group = 2, NeedsAuto = true, Indent = true, Label = UiText.Pick("Allow a pull that sets up a hurl", "放り飛ばしにつながる引き寄せは許可", "允许为抛飞铺垫的拉近"), Checked = PsionCombat.Combo(pc),
+                    Disabled = () => PsionCombat.Tk != PsionCombat.TkMode.Both || !PsionCombat.DamageOnly(pc),
+                    Click = r => { PsionCombat.SetCombo(pc, !PsionCombat.Combo(pc)); r.Checked = PsionCombat.Combo(pc); if (r.Mark) r.Mark.gameObject.SetActive(r.Checked.Value); } },
                 new Row { Group = 2, NeedsAuto = true, Label = UiText.Pick("Don't use if its path holds:", "経路に次がいれば使わない:", "路径上有以下对象时不使用:") },
             };
             var kinds = (PsionCombat.Bystander[])Enum.GetValues(typeof(PsionCombat.Bystander));
@@ -87,7 +93,7 @@ namespace PsionClass
             var button = item.button1;
             var label = button.mainText;
             HideKey(button);
-            bool autoOff = row.NeedsAuto && PsionCombat.Tk == PsionCombat.TkMode.Off;
+            bool autoOff = (row.NeedsAuto && PsionCombat.Tk == PsionCombat.TkMode.Off) || (row.Disabled?.Invoke() ?? false);
             button.interactable = row.Click != null && !autoOff;
             var layout = item.GetComponent<LayoutElement>() ?? item.gameObject.AddComponent<LayoutElement>();
             layout.minWidth = layout.preferredWidth = width;
@@ -175,7 +181,7 @@ namespace PsionClass
                     PsionCombat.Tk = m;
                     SetValue(row, PsionCombat.Label(m));
                     modal?.Close();
-                    if (was != (m == PsionCombat.TkMode.Off)) Reopen();
+                    Reopen();
                 },
             }).ToList();
             modal = EClass.ui.AddLayer<LayerList>();
