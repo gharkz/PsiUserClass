@@ -68,9 +68,9 @@ namespace PsionClass
                 Click = r => { PsionCombat.SetBonusOn(pc, !PsionCombat.BonusOn(pc)); r.Checked = PsionCombat.BonusOn(pc); if (r.Mark) r.Mark.gameObject.SetActive(r.Checked.Value); } });
             rows.Add(new Row { Note = true, Info = true, Label = UiText.Pick("Checked = innate (no spell stock). Click a number to change it.",
                 "チェック=生得(ストック不要)。数値をクリックで変更。", "勾选=天生(无需储备)。点击数值可修改。") });
-            rows.Add(new Row { Note = true, Info = true, Label = UiText.Pick("AutoCombat bonus: the higher it is, the more often AutoCombat picks that power when it's available when the bonuses are applied.",
-                "自動戦闘ボーナス: 高いほど、使用可能な時に自動戦闘がその能力を選びやすくなる(ボーナス適用時)。",
-                "自动战斗加成: 数值越高,自动战斗在可用时越常选择该能力(应用加成时)。") });
+            rows.Add(new Row { Note = true, Info = true, Label = UiText.Pick("AutoCombat bonus: the higher it is, the more often AutoCombat picks that power when it's available.",
+                "自動戦闘ボーナス: 高いほど、使用可能な時に自動戦闘がその能力を選びやすくなる。",
+                "自动战斗加成: 数值越高,自动战斗在可用时越常选择该能力。") });
             rows.Add(new Row { ColumnHeader = true, Label = UiText.Pick("Power", "能力", "能力"), Value = UiText.Pick("Unlocks at", "解放レベル", "解锁等级"), Value2 = UiText.Pick("AutoCombat bonus", "自動戦闘ボーナス", "自动战斗加成") });
             foreach (var (lv, id) in PsionData.Unlocks.GroupBy(u => u.id).Select(g => g.First()))
                 rows.Add(new Row
@@ -98,6 +98,7 @@ namespace PsionClass
             }
             layer.RefreshSize();
             layer.scroll.vertical = true; layer.scroll.horizontal = false;
+            layer.gameObject.AddComponent<HideNativeHeading>();
         }
 
         static void HideKey(UIButton button)
@@ -164,6 +165,7 @@ namespace PsionClass
             var vr = value.rectTransform; vr.anchorMin = new Vector2(from, 0); vr.anchorMax = new Vector2(to, 1);
             vr.offsetMin = new Vector2(10, 0); vr.offsetMax = new Vector2(-8, 0);
             value.text = text; value.fontStyle = header ? FontStyle.Bold : FontStyle.Normal; value.raycastTarget = false;
+            if (header) value.color = Ink;
             value.transform.SetAsLastSibling();
             return value;
         }
@@ -234,6 +236,7 @@ namespace PsionClass
                 modal.list.gridLayout.cellSize = new Vector2(380, 32);
             }
             modal.RefreshSize();
+            modal.gameObject.AddComponent<HideNativeHeading>();
         }
 
         // Positive number (max 10). Invalid input is dropped and the old value kept.
@@ -339,5 +342,19 @@ namespace PsionClass
         }
 
         static string Fmt(float v) => v.ToString("0.##", CultureInfo.InvariantCulture);
+    }
+}
+
+namespace PsionClass
+{
+    // The generic list's single "Name" heading row is replaced by our own headings (as in the Logistics tables).
+    internal sealed class HideNativeHeading : UnityEngine.MonoBehaviour
+    {
+        void LateUpdate()
+        {
+            foreach (var header in GetComponentsInChildren<UIHeader>(true))
+                if (header.transform.parent != null && header.transform.parent.name == "HeaderRow")
+                { header.transform.parent.gameObject.SetActive(false); enabled = false; }
+        }
     }
 }
