@@ -54,6 +54,26 @@ namespace PsionClass
             }
             return d;
         }
+        // Auto-combat priority bonus per power, applied while the Psion strategy is selected. Default: Telekinesis +20.
+        const string KeyBonus = "psion_ai_bonus";
+        static Dictionary<int, int> Bonuses(Chara c)
+        {
+            var d = new Dictionary<int, int>();
+            foreach (var part in (c?.GetStr(KeyBonus) ?? "").Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                var kv = part.Split(':');
+                if (kv.Length == 2 && int.TryParse(kv[0], out int id) && int.TryParse(kv[1], out int v)) d[id] = v;
+            }
+            return d;
+        }
+        internal static int DefaultBonus(int id) => id == PsionData.Telekinesis ? 20 : 0;
+        internal static int Bonus(Chara c, int id) => c != null && Bonuses(c).TryGetValue(id, out int v) ? v : DefaultBonus(id);
+        internal static void SetBonus(Chara c, int id, int v)
+        {
+            var d = Bonuses(c);
+            if (v == DefaultBonus(id)) d.Remove(id); else d[id] = v;
+            c.SetStr(KeyBonus, d.Count == 0 ? null : string.Join(",", d.Select(kv => kv.Key + ":" + kv.Value)));
+        }
         internal static int DefaultLevel(int id) => PsionData.Unlocks.First(u => u.id == id).lv;
         internal static int Level(Chara c, int id) => Levels(c).TryGetValue(id, out int lv) ? lv : DefaultLevel(id);
         internal static void SetLevel(Chara c, int id, int lv)

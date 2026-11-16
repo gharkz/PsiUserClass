@@ -265,3 +265,32 @@ namespace PsionClass
         }
     }
 }
+
+namespace PsionClass
+{
+    // Psion strategy: per-power priority bonus on the auto-combat ability list (PC uses its settings; NPCs the defaults).
+    [HarmonyLib.HarmonyPatch]
+    static class PsionStrategyBonus
+    {
+        static System.Collections.Generic.IEnumerable<System.Reflection.MethodBase> TargetMethods()
+        {
+            yield return HarmonyLib.AccessTools.Method(typeof(GoalCombat), nameof(GoalCombat.BuildAbilityList));
+            yield return HarmonyLib.AccessTools.Method(typeof(GoalAutoCombat), nameof(GoalAutoCombat.BuildAbilityList));
+        }
+        static void Postfix(GoalCombat __instance)
+        {
+            try
+            {
+                var owner = __instance.owner;
+                if (owner == null || !owner.HasElement(PsionData.FeatPsion) || owner.tactics?.source?.id != PsionData.JobId) return;
+                var cfg = owner.IsPC ? owner : null;
+                foreach (var a in __instance.abilities)
+                {
+                    if (a.act == null || Array.IndexOf(PsionCombat.PowerIds, a.act.id) < 0) continue;
+                    a.priorityMod = PowerConfig.Bonus(cfg, a.act.id); // set (not add): BuildAbilityList may run twice
+                }
+            }
+            catch (Exception e) { Plugin.Report(e); }
+        }
+    }
+}

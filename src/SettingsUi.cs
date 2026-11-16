@@ -13,19 +13,22 @@ namespace PsionClass
     {
         sealed class Row
         {
-            public string Label, Value;
+            public string Label, Value, Value2;
+            public bool ColumnHeader;
             public bool Heading, Note;
             public bool? Checked;
-            public Action<Row> Click, ValueClick;
+            public Action<Row> Click, ValueClick, Value2Click;
             public bool NeedsAuto, Indent;
             public Func<bool> Disabled;
             public int Group; // 1 = box top, 2 = inside, 3 = box bottom
             public ItemGeneral Bound;
             public FilterCheckmark Mark;
-            public Text ValueText, LabelText;
+            public Text ValueText, LabelText, Value2Text;
             public Color BaseColor;
         }
 
+        static LayerList current;
+        static List<Row> shown = new List<Row>();
         static readonly Color Ink = new Color(.39f, .31f, .22f), Warn = new Color(.62f, .20f, .12f);
 
         internal static void Open()
@@ -60,13 +63,18 @@ namespace PsionClass
                 rows.Add(new Row { Group = i == kinds.Length - 1 ? 3 : 2, NeedsAuto = true, Indent = true, Label = PsionCombat.BystanderLabel(kind), Checked = PsionCombat.Blocks(pc, kind),
                     Click = r => { PsionCombat.ToggleBlock(pc, kind); r.Checked = PsionCombat.Blocks(pc, kind); if (r.Mark) r.Mark.gameObject.SetActive(r.Checked.Value); } });
             }
-            rows.Add(new Row { Heading = true, Label = UiText.Pick("Powers (checked = innate, no spell stock; click a level to change it)", "能力(チェック=生得、ストック不要。レベルをクリックで変更)", "能力(勾选=天生,无需储备;点击等级可修改)") });
+            rows.Add(new Row { Heading = true, Label = UiText.Pick("Powers", "能力", "能力") });
+            rows.Add(new Row { Note = true, Label = UiText.Pick("Checked = innate (no spell stock). Click a number to change it. AC bonus applies with the Psion strategy.",
+                "チェック=生得(ストック不要)。数値をクリックで変更。ACボーナスはサイオン作戦で有効。", "勾选=天生(无需储备)。点击数值可修改。AC加成在灵能者战术下生效。") });
+            rows.Add(new Row { ColumnHeader = true, Label = UiText.Pick("Power", "能力", "能力"), Value = UiText.Pick("Unlocks at", "解放レベル", "解锁等级"), Value2 = UiText.Pick("AC bonus", "ACボーナス", "AC加成") });
             foreach (var (lv, id) in PsionData.Unlocks.GroupBy(u => u.id).Select(g => g.First()))
                 rows.Add(new Row
                 {
                     Label = EClass.sources.elements.map[id].GetName().ToTitleCase(),
                     Value = UiText.Pick("Psicraft ", "サイクラフト", "灵能术") + PowerConfig.Level(pc, id),
                     ValueClick = r => EditLevel(r, id),
+                    Value2 = Signed(PowerConfig.Bonus(pc, id)),
+                    Value2Click = r => EditBonus(r, id),
                     Checked = PowerConfig.Enabled(pc, id),
                     Click = r => { PowerConfig.Toggle(pc, id); r.Checked = PowerConfig.Enabled(pc, id); if (r.Mark) r.Mark.gameObject.SetActive(r.Checked.Value); },
                 });
@@ -106,48 +114,55 @@ namespace PsionClass
             layout.minHeight = layout.preferredHeight = row.Note ? 44 : 32;
             var fit = label.GetComponent<ContentSizeFitter>(); if (fit != null) fit.enabled = false;
             var labelLayout = label.GetComponent<LayoutElement>() ?? label.gameObject.AddComponent<LayoutElement>(); labelLayout.ignoreLayout = true;
-            var lr = label.rectTransform; lr.anchorMin = new Vector2(0, 0); lr.anchorMax = new Vector2(row.Value != null ? .62f : 1, 1);
+            float split = row.Value2 != null ? .52f : .62f, split2 = .76f;
+            var lr = label.rectTransform; lr.anchorMin = new Vector2(0, 0); lr.anchorMax = new Vector2(row.Value != null ? split : 1, 1);
             float left = (row.Checked.HasValue ? 44 : row.Heading || row.Note ? 8 : 20) + (row.Indent ? 24 : 0) + (row.Group > 0 ? 8 : 0);
             lr.offsetMin = new Vector2(left, 0); lr.offsetMax = new Vector2(-6, 0);
             label.alignment = TextAnchor.MiddleLeft; label.fontSize = row.Note ? 13 : 14;
             label.horizontalOverflow = row.Note ? HorizontalWrapMode.Wrap : HorizontalWrapMode.Overflow;
             label.text = row.Label;
             if (row.Note) { label.color = Warn; label.fontStyle = FontStyle.Normal; }
-            else if (row.Heading) { label.color = Ink; label.fontStyle = FontStyle.Bold; }
+            else if (row.Heading || row.ColumnHeader) { label.color = Ink; label.fontStyle = FontStyle.Bold; }
             row.BaseColor = label.color;
             if (row.Checked.HasValue) row.Mark = FilterCheckmark.Create(button.transform, new Vector2(24 + (row.Indent ? 24 : 0) + (row.Group > 0 ? 8 : 0), 0), row.Checked.Value);
             if (row.Group > 0) GroupBox(button.transform, row.Group);
+            if (row.Value == null) { ApplyState(row); return; }
+            float valueEnd = row.Value2 != null ? split2 : 1f;
+            row.ValueText = Cell(button, label, split, valueEnd, row.Value, row.ColumnHeader, row.ValueClick == null ? null : (Action)(() => row.ValueClick(row)));
+            if (row.Value2 != null)
+                row.Value2Text = Cell(button, label, split2, 1f, row.Value2, row.ColumnHeader, row.Value2Click == null ? null : (Action)(() => row.Value2Click(row)));
             ApplyState(row);
-            if (row.Value == null) return;
+        }
+
+        // One table cell: ink divider on its left edge, text, and (if clickable) an inked button panel behind it.
+        static Text Cell(UIButton button, Text template, float from, float to, string text, bool header, Action click)
+        {
             var divider = new GameObject("Psion column divider", typeof(RectTransform), typeof(Image), typeof(LayoutElement));
             divider.GetComponent<LayoutElement>().ignoreLayout = true;
             var line = (RectTransform)divider.transform; line.SetParent(button.transform, false);
-            line.anchorMin = new Vector2(.62f, 0); line.anchorMax = new Vector2(.62f, 1);
+            line.anchorMin = new Vector2(from, 0); line.anchorMax = new Vector2(from, 1);
             line.offsetMin = new Vector2(-.5f, 1); line.offsetMax = new Vector2(.5f, -1);
             var ink = divider.GetComponent<Image>(); ink.color = new Color(.38f, .28f, .16f, .30f); ink.raycastTarget = false;
-            var value = UnityEngine.Object.Instantiate(label, label.transform.parent);
-            value.name = "Psion value";
-            var vr = value.rectTransform; vr.anchorMin = new Vector2(.62f, 0); vr.anchorMax = new Vector2(1, 1);
-            vr.offsetMin = new Vector2(10, 0); vr.offsetMax = new Vector2(-8, 0);
-            value.text = row.Value; value.fontStyle = FontStyle.Normal;
-            row.ValueText = value;
-            if (row.ValueClick != null)
+            if (click != null)
             {
-                // Separate click target over the value cell (inked panel like Logistics action buttons).
                 var cell = new GameObject("Psion value button", typeof(RectTransform), typeof(Image), typeof(Button), typeof(LayoutElement));
                 cell.GetComponent<LayoutElement>().ignoreLayout = true;
                 var cr = (RectTransform)cell.transform; cr.SetParent(button.transform, false);
-                cr.anchorMin = new Vector2(.62f, 0); cr.anchorMax = new Vector2(1, 1); cr.offsetMin = new Vector2(4, 3); cr.offsetMax = new Vector2(-4, -3);
+                cr.anchorMin = new Vector2(from, 0); cr.anchorMax = new Vector2(to, 1); cr.offsetMin = new Vector2(4, 3); cr.offsetMax = new Vector2(-4, -3);
                 var ci = cell.GetComponent<Image>(); ci.color = new Color(.38f, .28f, .16f, .14f);
                 var co = cell.AddComponent<Outline>(); co.effectColor = new Color(.38f, .28f, .16f, .35f); co.effectDistance = new Vector2(1, -1);
                 cell.GetComponent<Button>().targetGraphic = ci;
-                cell.GetComponent<Button>().onClick.AddListener(() => row.ValueClick(row));
-                value.transform.SetAsLastSibling(); value.raycastTarget = false;
+                cell.GetComponent<Button>().onClick.AddListener(() => click());
             }
+            var value = UnityEngine.Object.Instantiate(template, template.transform.parent);
+            value.name = "Psion value";
+            var vr = value.rectTransform; vr.anchorMin = new Vector2(from, 0); vr.anchorMax = new Vector2(to, 1);
+            vr.offsetMin = new Vector2(10, 0); vr.offsetMax = new Vector2(-8, 0);
+            value.text = text; value.fontStyle = header ? FontStyle.Bold : FontStyle.Normal; value.raycastTarget = false;
+            value.transform.SetAsLastSibling();
+            return value;
         }
 
-        static LayerList current;
-        static List<Row> shown = new List<Row>();
         // Group box: light panel with ink edges; top edge on the first row, bottom edge on the last.
         static void GroupBox(Transform parent, int part)
         {
@@ -295,6 +310,26 @@ namespace PsionClass
                     }
                     PsionCombat.SetTkFixedValue(pc, (int)Math.Truncate(v));
                     SetValue(row, FixedText(pc));
+                }, Dialog.InputType.Default);
+        }
+
+        static string Signed(int v) => v > 0 ? "+" + v : v.ToString();
+
+        // Whole number -100..200. Invalid input is dropped and the old value kept.
+        static void EditBonus(Row row, int id)
+        {
+            var pc = EClass.pc;
+            Modals.Input(UiText.Pick("Auto-combat priority bonus for ", "自動戦闘の優先ボーナス: ", "自动战斗优先加成: ") + EClass.sources.elements.map[id].GetName() + " (-100 to 200)",
+                PowerConfig.Bonus(pc, id).ToString(), (cancel, text) =>
+                {
+                    if (cancel) return;
+                    if (!int.TryParse((text ?? "").Trim().TrimStart('+'), out int v) || v < -100 || v > 200)
+                    {
+                        Msg.Say(UiText.Pick("Not a valid bonus (-100 to 200). Kept ", "無効な値です(-100～200)。", "数值无效(-100至200)。保留") + Signed(PowerConfig.Bonus(pc, id)) + UiText.Pick(".", "のままです。", "。"));
+                        return;
+                    }
+                    PowerConfig.SetBonus(pc, id, v);
+                    row.Value2 = Signed(v); if (row.Value2Text) row.Value2Text.text = row.Value2;
                 }, Dialog.InputType.Default);
         }
 
