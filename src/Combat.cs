@@ -67,9 +67,12 @@ namespace PsionClass
             if (ch.hostility >= Hostility.Friend) return Bystander.FriendlyNpcs;
             return ch.IsHumanSpeak ? Bystander.NeutralNpcs : Bystander.NeutralCreatures;
         }
-        const string KeyTkFixed = "psion_tk_fixed"; // fixed MP cost (int >= 0); unset = use the multiplier
-        internal static int? TkFixed(Chara c) => int.TryParse(c.GetStr(KeyTkFixed), out int v) && v >= 0 ? v : (int?)null;
-        internal static void SetTkFixed(Chara c, int? v) => c.SetStr(KeyTkFixed, v.HasValue ? v.Value.ToString() : null);
+        const string KeyTkFixed = "psion_tk_fixed", KeyTkFixedOn = "psion_tk_fixed_on"; // value is kept while switched off
+        internal static int TkFixedValue(Chara c) => int.TryParse(c.GetStr(KeyTkFixed), out int v) && v >= 0 ? v : 3;
+        internal static void SetTkFixedValue(Chara c, int v) => c.SetStr(KeyTkFixed, v.ToString());
+        internal static bool TkFixedOn(Chara c) => !string.IsNullOrEmpty(c.GetStr(KeyTkFixedOn));
+        internal static void SetTkFixedOn(Chara c, bool on) => c.SetStr(KeyTkFixedOn, on ? "1" : null);
+        internal static int? TkFixed(Chara c) => TkFixedOn(c) ? TkFixedValue(c) : (int?)null;
         const string KeyTkMp = "psion_tk_mp"; // TK mana cost multiplier for Psions; default 0.5, 0 = free
         internal static float TkMpMult(Chara c) =>
             float.TryParse(c.GetStr(KeyTkMp), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float v) && v >= 0 ? v : 0.5f;
