@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
 using UnityEngine;
@@ -19,14 +20,31 @@ namespace PsionClass
         };
         internal static readonly int[] PowerIds = PsionData.Unlocks.Select(u => u.id).Distinct().ToArray();
 
+        // One window: backup reminder, auto-combat Telekinesis mode, then per-power on/off.
         internal static void OpenConfig()
         {
+            var pc = EClass.pc;
+            var rows = new List<int> { 0, -1 };                     // 0 = reminder, -1 = TK mode
+            rows.AddRange(PsionData.Unlocks.Select(u => u.id).Distinct());
             var layer = EClass.ui.AddLayer<LayerList>();
-            layer.SetHeader(UiText.Pick("Psion combat", "サイオンの戦術", "灵能者战术"));
-            var modes = (TkMode[])Enum.GetValues(typeof(TkMode));
-            layer.SetList2(modes.ToList(),
-                m => (Tk == m ? "● " : "○ ") + UiText.Pick("Auto-combat Telekinesis: ", "自動戦闘のテレキネシス: ", "自动战斗念动术: ") + Label(m),
-                (m, _) => { Tk = m; }, (m, item) => { }, autoClose: true);
+            layer.SetHeader(UiText.Pick("Psion settings", "サイオン設定", "灵能者设置"));
+            layer.SetSize(640, 0);
+            layer.SetList2(rows, r =>
+            {
+                if (r == 0) return UiText.Pick("! Back up your save first. Turning a power back on clears its spell stock.",
+                    "! 先にセーブをバックアップしてください。能力を再びオンにするとその呪文のストックは消えます。",
+                    "! 请先备份存档。重新开启能力会清除其法术储备。");
+                if (r == -1) return UiText.Pick("Auto-combat Telekinesis: ", "自動戦闘のテレキネシス: ", "自动战斗念动术: ") + Label(Tk);
+                int lv = PsionData.Unlocks.First(u => u.id == r).lv;
+                return (PowerConfig.Enabled(pc, r) ? "● " : "○ ") + EClass.sources.elements.map[r].GetName()
+                    + UiText.Pick("  (Psicraft ", "  (サイクラフト", "  (灵能术") + lv + ")";
+            }, (r, _) =>
+            {
+                if (r == 0) return;
+                if (r == -1) Tk = (TkMode)(((int)Tk + 1) % 4);
+                else PowerConfig.Toggle(pc, r);
+                layer.list.List();
+            }, (r, item) => { }, autoClose: false);
         }
     }
 
@@ -80,7 +98,7 @@ namespace PsionClass
                 b.SetToggle(false, null);
                 b.onClick.RemoveAllListeners();
                 b.onClick.AddListener(() => PsionCombat.OpenConfig());
-                b.mainText.SetText(UiText.Pick("Psion combat settings...", "サイオンの戦術設定...", "灵能者战术设置..."));
+                b.mainText.SetText(UiText.Pick("Psion settings...", "サイオン設定...", "灵能者设置..."));
             }
             catch (Exception e) { Plugin.Report(e); }
         }
@@ -128,6 +146,37 @@ namespace PsionClass
         static void Postfix(string id, Card c, Dice __result)
         {
             if (__result != null && id == "SpTelekinesis" && c is Chara ch && ch.HasElement(PsionData.FeatPsion)) __result.sides *= 2;
+        }
+    }
+}
+
+namespace PsionClass
+{
+    // Tooltips build TK's #calc dice through the Element overload; double the sides there too so the text matches.
+    [HarmonyLib.HarmonyPatch(typeof(Dice), nameof(Dice.Create), new[] { typeof(Element), typeof(Card) })]
+    static class PsionTelekinesisDiceTooltip
+    {
+        static void Postfix(Element ele, Card c, Dice __result)
+        {
+            if (__result != null && ele?.id == PsionData.Telekinesis && c is Chara ch && ch.HasElement(PsionData.FeatPsion)) __result.sides *= 2;
+        }
+    }
+}
+
+namespace PsionClass
+{
+    // Tooltip header: innate powers show "-" for stock, like ordinary abilities.
+    [HarmonyLib.HarmonyPatch(typeof(Element), nameof(Element.AddHeaderAbility))]
+    static class HideInnateStockTooltip
+    {
+        static bool Prefix(Element __instance, UINote n)
+        {
+            var pc = EClass.pc;
+            if (!(__instance is Spell) || pc == null || !PsionData.IsPsion(pc) || !pc.ability.Has(__instance.id)) return true;
+            var item = n.AddHeader("HeaderAbility", __instance.FullName.ToTitleCase(wholeText: true), __instance.GetSprite());
+            item.text2.text = "-";
+            (__instance as Act)?.SetImage(item.image1);
+            return false;
         }
     }
 }

@@ -67,3 +67,14 @@ Your mind steadies your hands. Harvesting tools bite harder, and the crafts and 
 * Psicraft 52: +6
 * Psicraft 100: +7
 * Psicraft 200: +8
+
+{p}
+
+<b>Settings</b>
+
+The strategy view on your character sheet has a Psion settings button.
+
+* Auto-combat Telekinesis: don't use (default), pull distant foes only, hurl adjacent foes only, or both. Hurls never go through allies.
+* Powers: switch any power off if you find it too strong. It becomes an ordinary spell again, needing spell stock, and keeps its level. Switching it back on makes it innate again and clears its spell stock.
+
+Back up your save before changing powers.

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using HarmonyLib;
 
 namespace PsionClass
@@ -11,7 +13,7 @@ namespace PsionClass
             int lv = c.elements.ValueWithoutLink(PsionData.Psicraft);
             foreach (var (need, id) in PsionData.Unlocks)
             {
-                if (lv < need || c.ability.Has(id)) continue;
+                if (lv < need || c.ability.Has(id) || !PowerConfig.Enabled(c, id)) continue;
                 Element absorbed = null;
                 if (PsionData.KineticSource.TryGetValue(id, out var vanillaAlias))
                     absorbed = c.elements.GetElement(EClass.sources.elements.alias[vanillaAlias].id);
@@ -27,6 +29,26 @@ namespace PsionClass
             }
             PsiEdge.Refresh(c);
             if (c.IsPC) LayerAbility.Redraw();
+        }
+    }
+
+    // Per-character power opt-out (balance). Off: the power stops being innate and is an ordinary spell again
+    // (level and XP kept, stock 0). On: granted again on the spot; any stock gathered meanwhile is cleared.
+    internal static class PowerConfig
+    {
+        const string Key = "psion_powers_off";
+        static HashSet<int> Disabled(Chara c) =>
+            new HashSet<int>((c.GetStr(Key) ?? "").Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(int.Parse));
+        internal static bool Enabled(Chara c, int id) => !Disabled(c).Contains(id);
+        internal static void Toggle(Chara c, int id)
+        {
+            var d = Disabled(c);
+            bool nowOff = !d.Remove(id);
+            if (nowOff) d.Add(id);
+            c.SetStr(Key, d.Count == 0 ? null : string.Join(",", d));
+            if (nowOff) { if (c.ability.Has(id)) c.ability.Remove(id); }
+            else Powers.Grant(c);
+            LayerAbility.Redraw();
         }
     }
 
