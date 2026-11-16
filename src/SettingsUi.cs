@@ -15,7 +15,7 @@ namespace PsionClass
         {
             public string Label, Value, Value2;
             public bool ColumnHeader;
-            public bool Heading, Note;
+            public bool Heading, Note, Info;
             public bool? Checked;
             public Action<Row> Click, ValueClick, Value2Click;
             public bool NeedsAuto, Indent;
@@ -64,8 +64,11 @@ namespace PsionClass
                     Click = r => { PsionCombat.ToggleBlock(pc, kind); r.Checked = PsionCombat.Blocks(pc, kind); if (r.Mark) r.Mark.gameObject.SetActive(r.Checked.Value); } });
             }
             rows.Add(new Row { Heading = true, Label = UiText.Pick("Powers", "能力", "能力") });
-            rows.Add(new Row { Note = true, Label = UiText.Pick("Checked = innate (no spell stock). Click a number to change it. AutoCombat bonus applies with the Psion strategy.",
-                "チェック=生得(ストック不要)。数値をクリックで変更。自動戦闘ボーナスはサイオン作戦で有効。", "勾选=天生(无需储备)。点击数值可修改。自动战斗加成在灵能者战术下生效。") });
+            rows.Add(new Row { Note = true, Info = true, Label = UiText.Pick("Checked = innate (no spell stock). Click a number to change it.",
+                "チェック=生得(ストック不要)。数値をクリックで変更。", "勾选=天生(无需储备)。点击数值可修改。") });
+            rows.Add(new Row { Note = true, Info = true, Label = UiText.Pick("AutoCombat bonus: the higher it is, the more often AutoCombat picks that power when it's available (Psion strategy only).",
+                "自動戦闘ボーナス: 高いほど、使用可能な時に自動戦闘がその能力を選びやすくなる(サイオン作戦のみ)。",
+                "自动战斗加成: 数值越高,自动战斗在可用时越常选择该能力(仅灵能者战术)。") });
             rows.Add(new Row { ColumnHeader = true, Label = UiText.Pick("Power", "能力", "能力"), Value = UiText.Pick("Unlocks at", "解放レベル", "解锁等级"), Value2 = UiText.Pick("AutoCombat bonus", "自動戦闘ボーナス", "自动战斗加成") });
             foreach (var (lv, id) in PsionData.Unlocks.GroupBy(u => u.id).Select(g => g.First()))
                 rows.Add(new Row
@@ -121,7 +124,7 @@ namespace PsionClass
             label.alignment = TextAnchor.MiddleLeft; label.fontSize = row.Note ? 13 : 14;
             label.horizontalOverflow = row.Note ? HorizontalWrapMode.Wrap : HorizontalWrapMode.Overflow;
             label.text = row.Label;
-            if (row.Note) { label.color = Warn; label.fontStyle = FontStyle.Normal; }
+            if (row.Note) { label.color = row.Info ? Ink : Warn; label.fontStyle = FontStyle.Normal; }
             else if (row.Heading || row.ColumnHeader) { label.color = Ink; label.fontStyle = FontStyle.Bold; }
             row.BaseColor = label.color;
             if (row.Checked.HasValue) row.Mark = FilterCheckmark.Create(button.transform, new Vector2(24 + (row.Indent ? 24 : 0) + (row.Group > 0 ? 8 : 0), 0), row.Checked.Value);
