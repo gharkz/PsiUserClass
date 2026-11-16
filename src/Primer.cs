@@ -23,9 +23,10 @@ namespace PsionClass
                 foreach (var line in raw)
                 {
                     if (line.Trim() == "{PSION_AWAKENING}") { lines.AddRange(Awakening(pc)); continue; }
-                    lines.Add(line.Replace("{PSION_TKMULT}", TkMult(pc)).Replace("{PSION_TKMP}", TkMp(pc)));
+                    lines.Add(ClassName.Rename(line.Replace("{PSION_TKMULT}", TkMult(pc)).Replace("{PSION_TKMP}", TkMp(pc))));
                 }
                 item.lines = lines.ToArray();
+                BookList.GetItem(item.id, item.cat); // refreshes title/author with the current class name
             }
             catch (Exception e) { Plugin.Report(e); }
         }
@@ -59,6 +60,25 @@ namespace PsionClass
                 });
                 yield return "* " + UiText.Pick("Psicraft ", "サイクラフト", "灵能术") + g.Key + ": " + string.Join(UiText.Pick(", ", "、", "、"), names);
             }
+        }
+    }
+}
+
+namespace PsionClass
+{
+    // Every lookup of the primer (inventory name, tooltips, the open book) gets the current class name.
+    // Originals are remembered per catalogue entry so later renames start from the default text, not a stale one.
+    [HarmonyLib.HarmonyPatch(typeof(BookList), nameof(BookList.GetItem))]
+    static class PrimerTitleLive
+    {
+        static readonly System.Runtime.CompilerServices.ConditionalWeakTable<BookList.Item, string[]> originals =
+            new System.Runtime.CompilerServices.ConditionalWeakTable<BookList.Item, string[]>();
+        static void Postfix(BookList.Item __result)
+        {
+            if (__result?.id != "guide_psion") return;
+            var o = originals.GetValue(__result, it => new[] { it.title, it.author });
+            __result.title = ClassName.Rename(o[0]);
+            __result.author = ClassName.Rename(o[1]);
         }
     }
 }

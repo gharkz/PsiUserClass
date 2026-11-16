@@ -39,6 +39,7 @@ namespace PsionClass
                 new Row { Note = true, Label = UiText.Pick("Back up your save before changing powers. Turning a power back on clears its spell stock.",
                     "能力を変更する前にセーブをバックアップしてください。能力を再びオンにするとその呪文のストックは消えます。",
                     "更改能力前请先备份存档。重新开启能力会清除其法术储备。") },
+                new Row { Label = UiText.Pick("Class name (this language)", "クラス名(この言語)", "职业名称(当前语言)"), Value = ClassName.Current, Click = EditClassName },
                 new Row { Heading = true, Label = UiText.Pick("Telekinesis", "テレキネシス", "念动术") },
                 new Row { Label = UiText.Pick("Use a fixed mana cost (ignores spell level)", "固定マナ消費を使う(呪文レベル無関係)", "使用固定魔力消耗(不受法术等级影响)"), Checked = PsionCombat.TkFixedOn(pc),
                     Click = r => { PsionCombat.SetTkFixedOn(pc, !PsionCombat.TkFixedOn(pc)); r.Checked = PsionCombat.TkFixedOn(pc); if (r.Mark) r.Mark.gameObject.SetActive(r.Checked.Value); RefreshStates(); } },
@@ -87,7 +88,7 @@ namespace PsionClass
             shown = rows;
             var layer = EClass.ui.AddLayer<LayerList>();
             current = layer;
-            layer.SetHeader(UiText.Pick("Psion settings", "サイオン設定", "灵能者设置"));
+            layer.SetHeader(ClassName.Current + UiText.Pick(" settings", "設定", "设置"));
             layer.SetSize(720, 560);
             layer.SetList2(rows, r => r.Label, (r, _) => r.Click?.Invoke(r), (r, item) => Format(r, item), autoClose: false);
             if (layer.list.gridLayout != null)
@@ -338,6 +339,21 @@ namespace PsionClass
                     }
                     PowerConfig.SetBonus(pc, id, v);
                     row.Value2 = Signed(v); if (row.Value2Text) row.Value2Text.text = row.Value2;
+                }, Dialog.InputType.Default);
+        }
+
+        // 1-24 characters; empty restores the default for this language.
+        static void EditClassName(Row row)
+        {
+            Modals.Input(UiText.Pick("Class name for this language (empty = default)", "この言語でのクラス名(空欄=初期値)", "当前语言的职业名称(留空=默认)"),
+                ClassName.Current, (cancel, text) =>
+                {
+                    if (cancel) return;
+                    var t = (text ?? "").Trim();
+                    if (t.Length > 24) { Msg.Say(UiText.Pick("Too long (24 characters max). Kept ", "長すぎます(最大24文字)。", "太长(最多24个字符)。保留") + ClassName.Current + UiText.Pick(".", "のままです。", "。")); return; }
+                    ClassName.Set(ClassName.LangKey, t);
+                    SetValue(row, ClassName.Current);
+                    if (current) current.SetHeader(ClassName.Current + UiText.Pick(" settings", "設定", "设置"));
                 }, Dialog.InputType.Default);
         }
 

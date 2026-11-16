@@ -148,7 +148,7 @@ namespace PsionClass
                 var parent = anchor.transform.parent;
                 var existing = parent.Find(Name);
                 if (!PsionData.IsPsion(EClass.pc)) { if (existing) existing.gameObject.SetActive(false); return; }
-                if (existing) { existing.gameObject.SetActive(true); return; }
+                if (existing) { existing.gameObject.SetActive(true); existing.GetComponent<UIButton>()?.mainText.SetText(ClassName.Current + UiText.Pick(" settings...", "設定...", "设置...")); return; }
                 var b = UnityEngine.Object.Instantiate(anchor, parent);
                 b.name = Name;
                 // The Details toggle is pinned in the corner (ignoreLayout); make ours a normal row under the tactics dropdown.
@@ -169,7 +169,7 @@ namespace PsionClass
                 b.mainText.alignment = TextAnchor.MiddleCenter;
                 var mt = b.mainText.rectTransform; mt.anchorMin = Vector2.zero; mt.anchorMax = Vector2.one; mt.offsetMin = mt.offsetMax = Vector2.zero;
                 b.onClick.AddListener(() => PsionCombat.OpenConfig());
-                b.mainText.SetText(UiText.Pick("Psion settings...", "サイオン設定...", "灵能者设置..."));
+                b.mainText.SetText(ClassName.Current + UiText.Pick(" settings...", "設定...", "设置..."));
             }
             catch (Exception e) { Plugin.Report(e); }
         }

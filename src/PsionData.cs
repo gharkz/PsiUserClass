@@ -59,6 +59,7 @@ namespace PsionClass
             }
             if (!EClass.sources.tactics.map.ContainsKey(JobId)) AddTactics();
             if (!EClass.sources.jobs.map.ContainsKey(JobId)) AddJob();
+            ClassName.Apply();
         }
 
         static void AddElement(SourceElement.Row row)

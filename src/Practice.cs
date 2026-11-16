@@ -46,15 +46,18 @@ namespace PsionClass
 
 namespace PsionClass
 {
-    // Vanilla TK reads the mouse target for the PC; during practice, target the dummy instead (same checks).
+    // Vanilla TK reads the mouse target for the PC; in practice and auto-combat, target the AI's target instead (same checks).
     [HarmonyLib.HarmonyPatch(typeof(ActTelekinesis), nameof(ActTelekinesis.CanPerform))]
     static class PracticeTkTarget
     {
         [HarmonyLib.HarmonyPriority(HarmonyLib.Priority.First)]
         static void Postfix(ActTelekinesis __instance, ref bool __result)
         {
-            if (!(Act.CC?.ai is AI_PsiPractice ai) || ai.target == null) return;
-            var tc = ai.target; Act.TC = tc;
+            // Vanilla TK reads the mouse target for the PC. In practice use the dummy; in auto-combat use the AI's
+            // current enemy (otherwise TK almost always fails CanPerform and auto-combat falls back to melee).
+            Card tc = Act.CC?.ai is AI_PsiPractice ai ? ai.target : (Act.CC != null && Act.CC.IsPC && Act.CC.ai is GoalCombat gc ? gc.tc : null);
+            if (tc == null) return;
+            Act.TC = tc;
             __result = !tc.pos.Equals(Act.CC.pos) && tc.trait.CanBeHeld && tc.trait.CanBeTeleported && !tc.IsMultisize
                        && __instance.ListPath(Act.CC.pos, tc.pos).Count > 1;
             if (__result) Act.TP.Set(tc.pos);
