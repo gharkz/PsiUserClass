@@ -69,7 +69,7 @@ The strategy view on your character sheet has a Psion settings button.
 
 {p}
 
-* Telekinesis collision dice sides: x2 by default, any positive number up to 10.
+* Telekinesis collision dice sides: x1.5 by default, any positive number up to 10.
 * Telekinesis mana cost: x0.5 by default, 0 (free) up to 10. Or set a fixed cost that ignores the spell's level.
 * Powers: switch any power off if you find it too strong. It becomes an ordinary spell again, needing spell stock, and keeps its level. Switching it back on makes it innate again and clears its spell stock. You can also change the Psicraft level that unlocks each power; this book lists them in that order.
 

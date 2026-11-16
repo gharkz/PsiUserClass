@@ -13,9 +13,9 @@ namespace PsionClass
         internal static TkMode Tk { get => (TkMode)EClass.pc.GetInt(KeyTkMode); set => EClass.pc.SetInt(KeyTkMode, (int)value); }
         const string KeyTkDice = "psion_tk_dice"; // float multiplier; default 2
         internal static float TkDiceMult(Chara c) =>
-            float.TryParse(c.GetStr(KeyTkDice), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float v) && v > 0 ? v : 2f;
+            float.TryParse(c.GetStr(KeyTkDice), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float v) && v > 0 ? v : 1.5f;
         internal static void SetTkDiceMult(Chara c, float v) =>
-            c.SetStr(KeyTkDice, Math.Abs(v - 2f) < 0.0001f ? null : v.ToString("R", System.Globalization.CultureInfo.InvariantCulture));
+            c.SetStr(KeyTkDice, Math.Abs(v - 1.5f) < 0.0001f ? null : v.ToString("R", System.Globalization.CultureInfo.InvariantCulture));
         internal static void ApplyTkDice(Card c, Dice d)
         {
             if (d != null && c is Chara ch && ch.HasElement(PsionData.FeatPsion))

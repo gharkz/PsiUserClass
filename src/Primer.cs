@@ -33,7 +33,7 @@ namespace PsionClass
 
         static string TkMult(Chara pc)
         {
-            float m = pc != null && EClass.core.IsGameStarted ? PsionCombat.TkDiceMult(pc) : 2f;
+            float m = pc != null && EClass.core.IsGameStarted ? PsionCombat.TkDiceMult(pc) : 1.5f;
             return "x" + m.ToString("0.##", CultureInfo.InvariantCulture);
         }
 
