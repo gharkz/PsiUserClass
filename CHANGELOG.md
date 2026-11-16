@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.1 (beta)
+
+Kinetic (Impact) powers now count as physical: armor (PV) and physical damage reduction (PDR) apply, elemental damage reduction (EDR) no longer does. The primer explains this and adds a short page on Psi-Shield and Psi-Teleport. Description: the settings let you balance the class your way and rename it.
+
+日本語
+念動(衝撃)の能力が物理扱いになりました: 鎧(PV)と物理ダメージ軽減(PDR)が適用され、属性ダメージ軽減(EDR)は効かなくなりました。入門書にその説明と、サイシールド・サイテレポートの短いページを追加。説明文: 設定でクラスのバランス調整や名前の変更ができることを追記。
+
+简体中文
+念动(冲击)能力现视为物理: 适用护甲(PV)与物理伤害减免(PDR),不再受元素伤害减免(EDR)影响。入门书加入相关说明,并新增灵能护盾与灵能传送的简短一页。说明文字: 补充了可在设置中按自己喜好平衡职业及改名。
+
 ## 0.1.0 (beta)
 
 Psion 0.1.0

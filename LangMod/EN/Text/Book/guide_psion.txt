@@ -22,7 +22,15 @@ Your powers are innate. They cost mana, never stock.
 
 Psi powers strike the mind. They may confuse a foe or lull it to sleep, which leaves it open to your staff or blade.
 
-Kinetic powers strike with raw force. Armor blunts them as it would any blow.
+Kinetic powers strike with raw force. Armor (PV) and physical damage reduction blunt them, as any blow; elemental damage reduction does not.
+
+{p}
+
+<b>Shield and step</b>
+
+Psi-Shield: the same ward as Holy Shield. They don't stack; the stronger holds.
+
+Psi-Teleport: pick any open spot on this map. Blocked or occupied, you land at random. Cancel to keep your mana.
 
 {p}
 

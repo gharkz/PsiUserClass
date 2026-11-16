@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Reflection.Emit;
 using HarmonyLib;
 
 namespace PsionClass
@@ -6,6 +8,10 @@ namespace PsionClass
     internal static class Whiplash
     {
         internal const int EleMind = 914, EleImpact = 925;
+        internal const int PDR = 55, EDR = 56;
+        // Set for the duration of one DamageHP call: a Psion's own kinetic power (physical, so PDR replaces EDR).
+        [ThreadStatic] internal static bool KineticHit;
+        internal static int DamageReductionStat(int id) => KineticHit && id == EDR ? PDR : id;
         internal static readonly string[] ExtraRaces = { "hand" };
         [ThreadStatic] internal static bool ItemPowered;   // current DamageEle comes from a rod/scroll/etc.
         [ThreadStatic] internal static int CurrentAct;     // current DamageEle's act id
@@ -54,8 +60,8 @@ namespace PsionClass
             {
                 if (Whiplash.Reflecting || dmg <= 0) return true;
                 // Kinetic powers are physical: armor applies (spell damage normally skips PV).
-                if (ele == Whiplash.EleImpact && Array.IndexOf(PsionData.KineticIds, Whiplash.CurrentAct) >= 0 && !Whiplash.ItemPowered)
-                    dmg = __instance.ApplyProtection(dmg);
+                Whiplash.KineticHit = ele == Whiplash.EleImpact && Array.IndexOf(PsionData.KineticIds, Whiplash.CurrentAct) >= 0 && !Whiplash.ItemPowered;
+                if (Whiplash.KineticHit) dmg = __instance.ApplyProtection(dmg);
                 if (ele != Whiplash.EleMind || Whiplash.ItemPowered || !Whiplash.IsTarget(__instance)) return true;
                 var psion = Whiplash.SourcePsion(origin, out var reflectTo);
                 if (psion == null) return true;
@@ -102,3 +108,25 @@ namespace PsionClass
     }
 }
 
+
+namespace PsionClass
+{
+    // Vanilla DamageHP reduces elemental hits (Impact included) by EDR and physical hits by PDR.
+    // Kinetic powers are physical, so they read PDR instead of EDR. The literal 56 occurs once in DamageHP.
+    [HarmonyPatch(typeof(Card), nameof(Card.DamageHP), new[] { typeof(long), typeof(int), typeof(int), typeof(AttackSource), typeof(Card), typeof(bool), typeof(Thing), typeof(Chara), typeof(int) })]
+    static class KineticReduction
+    {
+        static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> code)
+        {
+            var list = new List<CodeInstruction>(code);
+            var swap = AccessTools.Method(typeof(Whiplash), nameof(Whiplash.DamageReductionStat));
+            var hits = new List<int>();
+            for (int i = 0; i < list.Count; i++)
+                if (list[i].LoadsConstant(Whiplash.EDR)) hits.Add(i);
+            if (hits.Count != 1) { Plugin.Report(new Exception("Kinetic PDR: expected one EDR constant in DamageHP, found " + hits.Count + "; left vanilla")); return list; }
+            list.Insert(hits[0] + 1, new CodeInstruction(OpCodes.Call, swap));
+            return list;
+        }
+        static void Postfix() => Whiplash.KineticHit = false;
+    }
+}
