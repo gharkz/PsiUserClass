@@ -110,7 +110,12 @@ namespace PsionClass
                 if (existing) { existing.gameObject.SetActive(true); return; }
                 var b = UnityEngine.Object.Instantiate(anchor, parent);
                 b.name = Name;
-                b.transform.SetSiblingIndex(anchor.transform.GetSiblingIndex() + 1);
+                // The Details toggle is pinned in the corner (ignoreLayout); make ours a normal row under the tactics dropdown.
+                var le = b.GetComponent<UnityEngine.UI.LayoutElement>(); if (le) le.ignoreLayout = false;
+                var row = __instance.ddTactics.transform; while (row.parent != parent && row.parent != null) row = row.parent;
+                b.transform.SetSiblingIndex(row.parent == parent ? row.GetSiblingIndex() + 1 : parent.childCount - 1);
+                ((RectTransform)b.transform).sizeDelta = new Vector2(240, 28);
+                UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)parent);
                 b.SetToggle(false, null);
                 b.onClick.RemoveAllListeners();
                 b.onClick.AddListener(() => PsionCombat.OpenConfig());
