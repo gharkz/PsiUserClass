@@ -1,8 +1,8 @@
-# Psion [Beta]
+# PSI User Class [Beta]
 
 This mod is in beta and under active testing. Expect bugs, and please report any you find. Testers welcome!
 
-A new class: the Psion, a mystic who draws power from the mind, not magic. Fair warning: it's strong (no spell stock needed) and built for fun more than balance.
+Adds a PSI user class, the Psion: a mystic who draws power from the mind, not magic. Fair warning: it's strong (no spell stock needed) and built for fun more than balance.
 
 **How to use**
 
@@ -38,7 +38,7 @@ Inspired by ADOM's Mindcrafter; all names, text and art are original. English, J
 
 このModはベータ版で、現在テスト中です。不具合が予想されます。見つけた場合はぜひ報告してください。テスター歓迎！
 
-新クラス「サイオン」: 魔力ではなく精神から力を引き出す神秘家。注意: ストック不要のため強力です。バランスより楽しさ重視。
+サイ能力者のクラス「サイオン」を追加: 魔力ではなく精神から力を引き出す神秘家。注意: ストック不要のため強力です。バランスより楽しさ重視。
 
 **使い方**
 
@@ -68,7 +68,7 @@ ADOMのマインドクラフターに着想。名称・文章・画像はオリ�
 
 本模组处于测试阶段,正在积极测试中。可能存在错误,发现问题欢迎反馈。欢迎参与测试!
 
-新职业「灵能者」: 力量源自精神而非魔力的秘术师。提醒: 无需储备使其相当强,重在好玩而非平衡。
+新增灵能使用者职业「灵能者」: 力量源自精神而非魔力的秘术师。提醒: 无需储备使其相当强,重在好玩而非平衡。
 
 **使用方法**
 

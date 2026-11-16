@@ -24,9 +24,9 @@ d.polygon([(84, 32), (88, 38), (84, 44), (80, 38)], fill=(178, 120, 255, 255))  
 d.rectangle((0, 100, W, W), fill=(20, 14, 32, 255)); d.line([(0, 100), (W, 100)], fill=(90, 60, 140, 255))
 big = im.resize((1024, 1024), Image.NEAREST).convert("RGB")
 dd = ImageDraw.Draw(big)
-try: f = ImageFont.truetype("C:/Windows/Fonts/georgiab.ttf", 120); f2 = ImageFont.truetype("C:/Windows/Fonts/georgia.ttf", 44)
+try: f = ImageFont.truetype("C:/Windows/Fonts/georgiab.ttf", 96); f2 = ImageFont.truetype("C:/Windows/Fonts/georgia.ttf", 44)
 except OSError: f = f2 = ImageFont.load_default()
-for txt, font, y, col in (("PSION", f, 830, (230, 210, 255)), ("a new class  ·  beta", f2, 960, (150, 220, 235))):
+for txt, font, y, col in (("PSI USER CLASS", f, 830, (230, 210, 255)), ("play as the Psion  ·  beta", f2, 960, (150, 220, 235))):
     w = dd.textlength(txt, font=font); dd.text(((1024 - w) / 2 + 4, y + 4), txt, font=font, fill=(10, 6, 18)); dd.text(((1024 - w) / 2, y), txt, font=font, fill=col)
 big.save(os.path.join(OUT, "preview.jpg"), quality=92)
 print("ok")

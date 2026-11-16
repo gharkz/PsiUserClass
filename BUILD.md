@@ -1,4 +1,4 @@
-# Build
+# Build (PSI User Class)
 
 Run `dotnet build -c Release`. Set the `ElinGamePath` MSBuild property if Elin is installed elsewhere.
 
