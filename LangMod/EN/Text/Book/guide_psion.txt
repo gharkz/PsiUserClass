@@ -52,3 +52,18 @@ With practice, a Psion learns to touch dead minds without harm.
 * Master Necropathy (Psicraft 30): your mind reaches them fully.
 
 Rare equipment is said to carry this gift as well.
+
+{p}
+
+<b>Psionic Edge</b>
+
+Your mind steadies your hands. Harvesting tools bite harder, and the crafts and fine skills you have learned come easier. The edge grows slowly with Psicraft:
+
+* Psicraft 1: +1
+* Psicraft 5: +2
+* Psicraft 10: +3
+* Psicraft 20: +4
+* Psicraft 30: +5
+* Psicraft 52: +6
+* Psicraft 100: +7
+* Psicraft 200: +8

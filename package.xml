@@ -16,7 +16,8 @@ Pros
 - Powers cost mana only, never spell stock. Their spellbooks become Psicraft experience.
 - Telekinesis dice sides x2 for Psions. One-click Telekinesis practice on training dummies.
 - Psi-Teleport: pick any tile on the map, even unexplored.
-- Psionic Edge trait: small, growing bonus to harvesting tools and learned crafting/utility skills.
+- Psionic Edge trait: always-on bonus to harvesting tool hardness and learned crafting/utility skills.
+  Psicraft 1 / 5 / 10 / 20 / 30 / 52 / 100 / 200 = +1 / +2 / +3 / +4 / +5 / +6 / +7 / +8
 
 Cons
 - Mind damage you deal to the undead lashes back at you (rods and scrolls excepted).
@@ -48,7 +49,8 @@ Source: https://github.com/gharkz/Psion
 - 能力はマナのみ消費、ストック不要。その魔法書はサイクラフトの経験に。
 - サイオンのテレキネシスはダイス面数2倍。訓練用人形でワンクリック訓練。
 - サイテレポート: 地図上の任意のマスへ(未踏破も可)。
-- サイオニック・エッジ(特性): 採取道具と習得済みの製作・技術系スキルに成長する小ボーナス。
+- サイオニック・エッジ(特性): 採取道具の硬度と習得済みの製作・技術系スキルに常時ボーナス。
+  サイクラフト 1 / 5 / 10 / 20 / 30 / 52 / 100 / 200 = +1 / +2 / +3 / +4 / +5 / +6 / +7 / +8
 
 短所
 - アンデッドへの精神ダメージは自分に跳ね返る(杖・ロッド・巻物を除く)。
@@ -80,7 +82,8 @@ Source: https://github.com/gharkz/Psion
 - 能力只消耗魔力,无需储备。其魔法书转化为灵能术经验。
 - 灵能者的念动术骰面数翻倍。可对训练假人一键念动训练。
 - 灵能传送: 选择地图上任意格子(包括未探索区域)。
-- 灵能锋刃(特性): 采集工具与已习得的制作/技巧类技能获得随成长提升的小幅加成。
+- 灵能锋刃(特性): 采集工具硬度与已习得的制作/技巧类技能获得常驻加成。
+  灵能术 1 / 5 / 10 / 20 / 30 / 52 / 100 / 200 = +1 / +2 / +3 / +4 / +5 / +6 / +7 / +8
 
 缺点
 - 对不死者造成的精神伤害会反噬自身(魔杖、法棒、卷轴除外)。
