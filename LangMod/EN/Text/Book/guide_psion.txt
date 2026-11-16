@@ -70,6 +70,6 @@ The strategy view on your character sheet has a Psion settings button.
 * Telekinesis mana cost: x0.5 by default, 0 (free) up to 10. Or set a fixed cost that ignores the spell's level.
 * Powers: switch any power off if you find it too strong. It becomes an ordinary spell again, needing spell stock, and keeps its level. Switching it back on makes it innate again and clears its spell stock. You can also change the Psicraft level that unlocks each power; this book lists them in that order.
 
-* Psion strategy: pick Psion as your auto-combat type for Mage-like tactics. Each power's AC bonus (Telekinesis +20 by default) raises how often auto-combat chooses it.
+* Psion strategy: pick Psion as your auto-combat type for Mage-like tactics. Each power's AutoCombat bonus (Telekinesis +20 by default) raises how often auto-combat chooses it.
 
 Back up your save before changing powers.

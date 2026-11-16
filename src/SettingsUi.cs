@@ -64,9 +64,9 @@ namespace PsionClass
                     Click = r => { PsionCombat.ToggleBlock(pc, kind); r.Checked = PsionCombat.Blocks(pc, kind); if (r.Mark) r.Mark.gameObject.SetActive(r.Checked.Value); } });
             }
             rows.Add(new Row { Heading = true, Label = UiText.Pick("Powers", "能力", "能力") });
-            rows.Add(new Row { Note = true, Label = UiText.Pick("Checked = innate (no spell stock). Click a number to change it. AC bonus applies with the Psion strategy.",
-                "チェック=生得(ストック不要)。数値をクリックで変更。ACボーナスはサイオン作戦で有効。", "勾选=天生(无需储备)。点击数值可修改。AC加成在灵能者战术下生效。") });
-            rows.Add(new Row { ColumnHeader = true, Label = UiText.Pick("Power", "能力", "能力"), Value = UiText.Pick("Unlocks at", "解放レベル", "解锁等级"), Value2 = UiText.Pick("AC bonus", "ACボーナス", "AC加成") });
+            rows.Add(new Row { Note = true, Label = UiText.Pick("Checked = innate (no spell stock). Click a number to change it. AutoCombat bonus applies with the Psion strategy.",
+                "チェック=生得(ストック不要)。数値をクリックで変更。自動戦闘ボーナスはサイオン作戦で有効。", "勾选=天生(无需储备)。点击数值可修改。自动战斗加成在灵能者战术下生效。") });
+            rows.Add(new Row { ColumnHeader = true, Label = UiText.Pick("Power", "能力", "能力"), Value = UiText.Pick("Unlocks at", "解放レベル", "解锁等级"), Value2 = UiText.Pick("AutoCombat bonus", "自動戦闘ボーナス", "自动战斗加成") });
             foreach (var (lv, id) in PsionData.Unlocks.GroupBy(u => u.id).Select(g => g.First()))
                 rows.Add(new Row
                 {
@@ -114,7 +114,7 @@ namespace PsionClass
             layout.minHeight = layout.preferredHeight = row.Note ? 44 : 32;
             var fit = label.GetComponent<ContentSizeFitter>(); if (fit != null) fit.enabled = false;
             var labelLayout = label.GetComponent<LayoutElement>() ?? label.gameObject.AddComponent<LayoutElement>(); labelLayout.ignoreLayout = true;
-            float split = row.Value2 != null ? .52f : .62f, split2 = .76f;
+            float split = row.Value2 != null ? .46f : .62f, split2 = .68f;
             var lr = label.rectTransform; lr.anchorMin = new Vector2(0, 0); lr.anchorMax = new Vector2(row.Value != null ? split : 1, 1);
             float left = (row.Checked.HasValue ? 44 : row.Heading || row.Note ? 8 : 20) + (row.Indent ? 24 : 0) + (row.Group > 0 ? 8 : 0);
             lr.offsetMin = new Vector2(left, 0); lr.offsetMax = new Vector2(-6, 0);
