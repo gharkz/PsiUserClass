@@ -22,7 +22,8 @@ namespace PsionClass
             public int Group; // 1 = box top, 2 = inside, 3 = box bottom
             public ItemGeneral Bound;
             public FilterCheckmark Mark;
-            public Text ValueText;
+            public Text ValueText, LabelText;
+            public Color BaseColor;
         }
 
         static readonly Color Ink = new Color(.39f, .31f, .22f), Warn = new Color(.62f, .20f, .12f);
@@ -41,7 +42,7 @@ namespace PsionClass
                 new Row { Group = 1, Heading = true, Label = UiText.Pick("Auto-combat Telekinesis", "自動戦闘でのテレキネシス", "自动战斗中的念动术") },
                 new Row { Group = 2, Label = UiText.Pick("Use", "使用", "使用"), Value = PsionCombat.Label(PsionCombat.Tk), Click = ChooseTkMode },
                 new Row { Group = 2, NeedsAuto = true, Label = UiText.Pick("Only when it deals collision damage", "衝突ダメージを与える時のみ", "仅在造成碰撞伤害时"), Checked = PsionCombat.DamageOnly(pc),
-                    Click = r => { PsionCombat.SetDamageOnly(pc, !PsionCombat.DamageOnly(pc)); Reopen(); } },
+                    Click = r => { PsionCombat.SetDamageOnly(pc, !PsionCombat.DamageOnly(pc)); r.Checked = PsionCombat.DamageOnly(pc); if (r.Mark) r.Mark.gameObject.SetActive(r.Checked.Value); RefreshStates(); } },
                 new Row { Group = 2, NeedsAuto = true, Indent = true, Label = UiText.Pick("Allow a pull that sets up a hurl", "放り飛ばしにつながる引き寄せは許可", "允许为抛飞铺垫的拉近"), Checked = PsionCombat.Combo(pc),
                     Disabled = () => PsionCombat.Tk != PsionCombat.TkMode.Both || !PsionCombat.DamageOnly(pc),
                     Click = r => { PsionCombat.SetCombo(pc, !PsionCombat.Combo(pc)); r.Checked = PsionCombat.Combo(pc); if (r.Mark) r.Mark.gameObject.SetActive(r.Checked.Value); } },
@@ -65,6 +66,7 @@ namespace PsionClass
                     Click = r => { PowerConfig.Toggle(pc, id); r.Checked = PowerConfig.Enabled(pc, id); if (r.Mark) r.Mark.gameObject.SetActive(r.Checked.Value); },
                 });
 
+            shown = rows;
             var layer = EClass.ui.AddLayer<LayerList>();
             current = layer;
             layer.SetHeader(UiText.Pick("Psion settings", "サイオン設定", "灵能者设置"));
@@ -93,8 +95,7 @@ namespace PsionClass
             var button = item.button1;
             var label = button.mainText;
             HideKey(button);
-            bool autoOff = (row.NeedsAuto && PsionCombat.Tk == PsionCombat.TkMode.Off) || (row.Disabled?.Invoke() ?? false);
-            button.interactable = row.Click != null && !autoOff;
+            row.LabelText = label;
             var layout = item.GetComponent<LayoutElement>() ?? item.gameObject.AddComponent<LayoutElement>();
             layout.minWidth = layout.preferredWidth = width;
             layout.minHeight = layout.preferredHeight = row.Note ? 44 : 32;
@@ -108,9 +109,10 @@ namespace PsionClass
             label.text = row.Label;
             if (row.Note) { label.color = Warn; label.fontStyle = FontStyle.Normal; }
             else if (row.Heading) { label.color = Ink; label.fontStyle = FontStyle.Bold; }
+            row.BaseColor = label.color;
             if (row.Checked.HasValue) row.Mark = FilterCheckmark.Create(button.transform, new Vector2(24 + (row.Indent ? 24 : 0) + (row.Group > 0 ? 8 : 0), 0), row.Checked.Value);
             if (row.Group > 0) GroupBox(button.transform, row.Group);
-            if (autoOff) { label.color = new Color(label.color.r, label.color.g, label.color.b, .38f); if (row.Mark) row.Mark.transform.parent.GetComponent<Image>().color = new Color(.85f, .77f, .60f, .30f); }
+            ApplyState(row);
             if (row.Value == null) return;
             var divider = new GameObject("Psion column divider", typeof(RectTransform), typeof(Image), typeof(LayoutElement));
             divider.GetComponent<LayoutElement>().ignoreLayout = true;
@@ -140,7 +142,7 @@ namespace PsionClass
         }
 
         static LayerList current;
-        static void Reopen() { EClass.core.actionsNextFrame.Add(() => { if (current != null) current.Close(); Open(); }); }
+        static List<Row> shown = new List<Row>();
         // Group box: light panel with ink edges; top edge on the first row, bottom edge on the last.
         static void GroupBox(Transform parent, int part)
         {
@@ -165,6 +167,18 @@ namespace PsionClass
             if (part == 3) Edge(new Vector2(0, 0), new Vector2(1, 0), Vector2.zero, new Vector2(0, 1));
         }
 
+        static bool Greyed(Row row) => (row.NeedsAuto && PsionCombat.Tk == PsionCombat.TkMode.Off) || (row.Disabled?.Invoke() ?? false);
+        // Update a row's enabled look in place (no window rebuild).
+        static void ApplyState(Row row)
+        {
+            if (row.Bound == null) return;
+            bool grey = Greyed(row);
+            row.Bound.button1.interactable = row.Click != null && !grey;
+            if (row.LabelText) row.LabelText.color = new Color(row.BaseColor.r, row.BaseColor.g, row.BaseColor.b, grey ? .38f : row.BaseColor.a);
+            if (row.Mark) row.Mark.transform.parent.GetComponent<Image>().color = new Color(.85f, .77f, .60f, grey ? .30f : .70f);
+        }
+        static void RefreshStates() { foreach (var r in shown) ApplyState(r); }
+
         static void SetValue(Row row, string text) { row.Value = text; if (row.ValueText) row.ValueText.text = text; }
 
         // Small modal window listing every mode (same table styling); the current one is checked, a click picks and closes.
@@ -181,7 +195,7 @@ namespace PsionClass
                     PsionCombat.Tk = m;
                     SetValue(row, PsionCombat.Label(m));
                     modal?.Close();
-                    Reopen();
+                    RefreshStates();
                 },
             }).ToList();
             modal = EClass.ui.AddLayer<LayerList>();
