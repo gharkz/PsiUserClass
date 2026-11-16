@@ -1,0 +1,5 @@
+bin/
+obj/
+dist/
+research/
+*-preview-4x.png

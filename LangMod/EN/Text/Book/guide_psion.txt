@@ -1,0 +1,54 @@
+The Psion's Primer,an unnamed Psion
+
+Few have heard of us, and fewer still can teach what we do. Our power is not drawn from magic. It comes from the mind itself.
+
+<b>Psicraft</b>
+
+Psicraft is our discipline. It grows as you use your powers, and as it grows, new powers awaken in you. No trainer can teach it.
+
+Spellbooks of powers you already command will not grant you stock. Their insight flows into your Psicraft instead.
+
+{p}
+
+<b>Awakening</b>
+
+* Psicraft 1: Telekinesis
+* Psicraft 5: Psi-Arrow
+* Psicraft 10: Psi-Bolt
+* Psicraft 15: Kinetic Arrow
+* Psicraft 20: Kinetic Bolt
+* Psicraft 25: Psi-Shield
+* Psicraft 35: Psi-Ball
+* Psicraft 45: Psi-Funnel, Kinetic Ball
+* Psicraft 50: Psi-Teleport
+* Psicraft 55: Kinetic Funnel
+
+Your powers are innate. They cost mana, never stock.
+
+{p}
+
+<b>Mind and force</b>
+
+Psi powers strike the mind. They may confuse a foe or lull it to sleep, which leaves it open to your staff or blade.
+
+Kinetic powers strike with raw force. Armor blunts them as it would any blow.
+
+{p}
+
+<b>The dead remember</b>
+
+Never reach into the mind of the dead. Whatever harm your mind would deal them lashes back into you.
+
+Telekinesis and kinetic powers are safe against them. In a Psion's hands, Telekinesis strikes twice as hard as any spellbook could teach. Wands, rods and scrolls carry their own power and are safe as well.
+
+{p}
+
+<b>Necropathy</b>
+
+With practice, a Psion learns to touch dead minds without harm.
+
+* Necropathy (Psicraft 10): the dead no longer lash back.
+* Intermediate Necropathy (Psicraft 20): your mind reaches them at half strength.
+* Master Necropathy (Psicraft 30): your mind reaches them fully.
+
+Rare equipment is said to carry this gift as well.
