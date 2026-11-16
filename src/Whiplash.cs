@@ -102,25 +102,3 @@ namespace PsionClass
     }
 }
 
-namespace PsionClass
-{
-    // Mind and kinetic (Impact) funnels inherit the Psion caster's Psicraft, which raises their level.
-    [HarmonyLib.HarmonyPatch(typeof(Chara), nameof(Chara.MakeMinion))]
-    static class FunnelInherit
-    {
-        static void Postfix(Chara __instance, Chara _master)
-        {
-            try
-            {
-                var bit = __instance;
-                if (bit.id != "bit" || _master == null || !_master.HasElement(PsionData.FeatPsion)) return;
-                int ele = bit.c_idMainElement;
-                if (ele != Whiplash.EleMind && ele != Whiplash.EleImpact) return;
-                int psi = _master.elements.ValueWithoutLink(PsionData.Psicraft);
-                bit.elements.SetBase(PsionData.Psicraft, psi);
-                if (psi > bit.LV) bit.SetLv(psi);
-            }
-            catch (System.Exception e) { Plugin.Report(e); }
-        }
-    }
-}
