@@ -81,7 +81,7 @@ namespace PsionClass
                 if (image.sprite != null && image.sprite.name == "bg_key") image.gameObject.SetActive(false);
         }
 
-        static void Format(Row row, ItemGeneral item)
+        static void Format(Row row, ItemGeneral item, float width = 660)
         {
             row.Bound = item;
             var button = item.button1;
@@ -90,7 +90,7 @@ namespace PsionClass
             bool autoOff = row.NeedsAuto && PsionCombat.Tk == PsionCombat.TkMode.Off;
             button.interactable = row.Click != null && !autoOff;
             var layout = item.GetComponent<LayoutElement>() ?? item.gameObject.AddComponent<LayoutElement>();
-            layout.minWidth = layout.preferredWidth = 660;
+            layout.minWidth = layout.preferredWidth = width;
             layout.minHeight = layout.preferredHeight = row.Note ? 44 : 32;
             var fit = label.GetComponent<ContentSizeFitter>(); if (fit != null) fit.enabled = false;
             var labelLayout = label.GetComponent<LayoutElement>() ?? label.gameObject.AddComponent<LayoutElement>(); labelLayout.ignoreLayout = true;
@@ -161,16 +161,34 @@ namespace PsionClass
 
         static void SetValue(Row row, string text) { row.Value = text; if (row.ValueText) row.ValueText.text = text; }
 
-        // Popup listing every mode; pick one.
+        // Small modal window listing every mode (same table styling); the current one is checked, a click picks and closes.
         static void ChooseTkMode(Row row)
         {
-            var menu = EClass.ui.CreateContextMenuInteraction();
-            foreach (var m in (PsionCombat.TkMode[])Enum.GetValues(typeof(PsionCombat.TkMode)))
+            LayerList modal = null;
+            var options = ((PsionCombat.TkMode[])Enum.GetValues(typeof(PsionCombat.TkMode))).Select(m => new Row
             {
-                var mode = m;
-                menu.AddButton((PsionCombat.Tk == mode ? "● " : "○ ") + PsionCombat.Label(mode), () => { bool was = PsionCombat.Tk == PsionCombat.TkMode.Off; PsionCombat.Tk = mode; SetValue(row, PsionCombat.Label(mode)); if (was != (mode == PsionCombat.TkMode.Off)) Reopen(); });
+                Label = PsionCombat.Label(m),
+                Checked = PsionCombat.Tk == m,
+                Click = _ =>
+                {
+                    bool was = PsionCombat.Tk == PsionCombat.TkMode.Off;
+                    PsionCombat.Tk = m;
+                    SetValue(row, PsionCombat.Label(m));
+                    modal?.Close();
+                    if (was != (m == PsionCombat.TkMode.Off)) Reopen();
+                },
+            }).ToList();
+            modal = EClass.ui.AddLayer<LayerList>();
+            modal.SetHeader(UiText.Pick("Auto-combat Telekinesis", "自動戦闘でのテレキネシス", "自动战斗中的念动术"));
+            modal.SetSize(440, 300);
+            modal.SetList2(options, r => r.Label, (r, _) => r.Click?.Invoke(r), (r, item) => Format(r, item, 380), autoClose: false);
+            if (modal.list.gridLayout != null)
+            {
+                modal.list.gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+                modal.list.gridLayout.constraintCount = 1;
+                modal.list.gridLayout.cellSize = new Vector2(380, 32);
             }
-            menu.Show();
+            modal.RefreshSize();
         }
 
         // Positive number (max 10). Invalid input is dropped and the old value kept.
