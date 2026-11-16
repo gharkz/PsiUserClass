@@ -28,7 +28,7 @@ Adds a PSI user class, the Psion: a mystic who draws power from the mind, not ma
 
 Inspired by ADOM's Mindcrafter. English, Japanese and Simplified Chinese. Japanese and Simplified Chinese translations: Claude (AI).
 
-Disclosure: I used Claude (AI) as a coding and translation assistant while building this mod. The design, testing and final decisions are my own.
+Disclosure: I used Claude (AI) as a coding, art and translation assistant while building this mod. The design, testing and final decisions are my own.
 
 ![The Psion's Primer](screenshots/primer.jpg)
 
@@ -68,7 +68,7 @@ Disclosure: I used Claude (AI) as a coding and translation assistant while build
 
 ADOMのマインドクラフターに着想。英語・日本語・簡体字中国語対応。日本語・簡体字中国語の翻訳: Claude(AI翻訳)。
 
-開示: このModの制作では、コーディングと翻訳の補助にClaude(AI)を使用しました。設計・テスト・最終判断は私自身が行いました。
+開示: このModの制作では、コーディング・画像・翻訳の補助にClaude(AI)を使用しました。設計・テスト・最終判断は私自身が行いました。
 
 ---
 
@@ -102,4 +102,4 @@ ADOMのマインドクラフターに着想。英語・日本語・簡体字中�
 
 灵感来自ADOM的Mindcrafter。支持英语、日语、简体中文。日语和简体中文译文: Claude(AI翻译)。
 
-说明: 制作本模组时,我使用了Claude(AI)作为编程与翻译助手。设计、测试与最终决定均由我本人完成。
+说明: 制作本模组时,我使用了Claude(AI)作为编程、美术与翻译助手。设计、测试与最终决定均由我本人完成。
