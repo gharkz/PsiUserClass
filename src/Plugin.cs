@@ -35,6 +35,7 @@ namespace PsionClass
             return PsionData.Registered;
         }
         internal static void Report(Exception error) { Instance?.Logger.LogError(error); }
+        internal static void Guard(Action action) { try { action(); } catch (Exception error) { Report(error); } }
         void OnDestroy() { harmony?.UnpatchSelf(); }
     }
 

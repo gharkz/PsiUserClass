@@ -12,16 +12,7 @@ Spellbooks of powers you already command will not grant you stock. Their insight
 
 <b>Awakening</b>
 
-* Psicraft 1: Telekinesis
-* Psicraft 5: Psi-Arrow
-* Psicraft 10: Psi-Bolt
-* Psicraft 15: Kinetic Arrow
-* Psicraft 20: Kinetic Bolt
-* Psicraft 25: Psi-Shield
-* Psicraft 35: Psi-Ball
-* Psicraft 45: Psi-Funnel, Kinetic Ball
-* Psicraft 50: Psi-Teleport
-* Psicraft 55: Kinetic Funnel
+{PSION_AWAKENING}
 
 Your powers are innate. They cost mana, never stock.
 
@@ -39,7 +30,7 @@ Kinetic powers strike with raw force. Armor blunts them as it would any blow.
 
 Never reach into the mind of the dead. Whatever harm your mind would deal them lashes back into you.
 
-Telekinesis and kinetic powers are safe against them. In a Psion's hands, Telekinesis strikes twice as hard as any spellbook could teach. Wands, rods and scrolls carry their own power and are safe as well.
+Telekinesis and kinetic powers are safe against them. In a Psion's hands, Telekinesis collision dice have {PSION_TKMULT} the sides a spellbook user's do, at {PSION_TKMP} the mana. Wands, rods and scrolls carry their own power and are safe as well.
 
 {p}
 
@@ -74,8 +65,9 @@ Your mind steadies your hands. Harvesting tools bite harder, and the crafts and 
 
 The strategy view on your character sheet has a Psion settings button.
 
-* Auto-combat Telekinesis: don't use (default), pull distant foes only, hurl adjacent foes only, or both. Hurls never go through allies.
-* Telekinesis collision dice sides: x2 by default; choose x1, x1.5, x2, x2.5 or x3.
+* Auto-combat Telekinesis: don't use (default), pull distant foes only, hurl adjacent foes only, or both. Auto-combat skips a cast whose path holds any bystander kind you have checked (allies, neutral animals and monsters, neutral NPCs, friendly NPCs).
+* Telekinesis collision dice sides: x2 by default, any positive number up to 10.
+* Telekinesis mana cost: x0.5 by default, 0 (free) up to 10.
 * Powers: switch any power off if you find it too strong. It becomes an ordinary spell again, needing spell stock, and keeps its level. Switching it back on makes it innate again and clears its spell stock.
 
 Back up your save before changing powers.

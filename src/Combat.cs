@@ -11,18 +11,15 @@ namespace PsionClass
         const int KeyTkMode = 794001; // Chara int map key
         internal enum TkMode { Off = 0, PullOnly = 1, PushOnly = 2, Both = 3 }
         internal static TkMode Tk { get => (TkMode)EClass.pc.GetInt(KeyTkMode); set => EClass.pc.SetInt(KeyTkMode, (int)value); }
-        const int KeyTkDice = 794003; // percent; 0 = default (200)
-        internal static readonly int[] TkDiceSteps = { 100, 150, 200, 250, 300 };
-        internal static int TkDicePct(Chara c) { int v = c.GetInt(KeyTkDice); return v <= 0 ? 200 : v; }
-        internal static void CycleTkDice(Chara c)
-        {
-            int i = Array.IndexOf(TkDiceSteps, TkDicePct(c));
-            c.SetInt(KeyTkDice, TkDiceSteps[(i + 1) % TkDiceSteps.Length]);
-        }
+        const string KeyTkDice = "psion_tk_dice"; // float multiplier; default 2
+        internal static float TkDiceMult(Chara c) =>
+            float.TryParse(c.GetStr(KeyTkDice), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float v) && v > 0 ? v : 2f;
+        internal static void SetTkDiceMult(Chara c, float v) =>
+            c.SetStr(KeyTkDice, Math.Abs(v - 2f) < 0.0001f ? null : v.ToString("R", System.Globalization.CultureInfo.InvariantCulture));
         internal static void ApplyTkDice(Card c, Dice d)
         {
             if (d != null && c is Chara ch && ch.HasElement(PsionData.FeatPsion))
-                d.sides = Math.Max(1, d.sides * TkDicePct(ch) / 100); // integer floor
+                d.sides = Math.Max(1, (int)Math.Floor(d.sides * TkDiceMult(ch))); // floor
         }
         internal static string Label(TkMode m) => m switch
         {
@@ -33,34 +30,39 @@ namespace PsionClass
         };
         internal static readonly int[] PowerIds = PsionData.Unlocks.Select(u => u.id).Distinct().ToArray();
 
-        // One window: backup reminder, auto-combat Telekinesis mode, then per-power on/off.
-        internal static void OpenConfig()
+        // Which non-hostile bystanders block auto-combat Telekinesis when on the travel path (all on by default).
+        internal enum Bystander { Allies = 0, NeutralCreatures = 1, NeutralNpcs = 2, FriendlyNpcs = 3 }
+        const string KeyPassThrough = "psion_tk_passthrough"; // bystander kinds allowed in the path (unchecked)
+        static HashSet<int> PassThrough(Chara c) =>
+            new HashSet<int>((c.GetStr(KeyPassThrough) ?? "").Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(int.Parse));
+        internal static bool Blocks(Chara c, Bystander k) => !PassThrough(c).Contains((int)k);
+        internal static void ToggleBlock(Chara c, Bystander k)
         {
-            var pc = EClass.pc;
-            var rows = new List<int> { 0, -1, -2 };                 // 0 = reminder, -1 = TK mode, -2 = TK dice
-            rows.AddRange(PsionData.Unlocks.Select(u => u.id).Distinct());
-            var layer = EClass.ui.AddLayer<LayerList>();
-            layer.SetHeader(UiText.Pick("Psion settings", "サイオン設定", "灵能者设置"));
-            layer.SetSize(680, 460);
-            layer.SetList2(rows, r =>
-            {
-                if (r == 0) return UiText.Pick("! Back up your save first. Turning a power back on clears its spell stock.",
-                    "! 先にセーブをバックアップしてください。能力を再びオンにするとその呪文のストックは消えます。",
-                    "! 请先备份存档。重新开启能力会清除其法术储备。");
-                if (r == -1) return UiText.Pick("Auto-combat Telekinesis: ", "自動戦闘のテレキネシス: ", "自动战斗念动术: ") + Label(Tk);
-                if (r == -2) return UiText.Pick("Telekinesis collision dice sides: x", "テレキネシス衝突ダイスの面数: x", "念动术碰撞骰面数: x") + (TkDicePct(pc) / 100f).ToString("0.##");
-                int lv = PsionData.Unlocks.First(u => u.id == r).lv;
-                return (PowerConfig.Enabled(pc, r) ? "● " : "○ ") + EClass.sources.elements.map[r].GetName()
-                    + UiText.Pick("  (Psicraft ", "  (サイクラフト", "  (灵能术") + lv + ")";
-            }, (r, _) =>
-            {
-                if (r == 0) return;
-                if (r == -1) Tk = (TkMode)(((int)Tk + 1) % 4);
-                else if (r == -2) CycleTkDice(pc);
-                else PowerConfig.Toggle(pc, r);
-                layer.list.List();
-            }, (r, item) => { }, autoClose: false);
+            var set = PassThrough(c);
+            if (!set.Remove((int)k)) set.Add((int)k);
+            c.SetStr(KeyPassThrough, set.Count == 0 ? null : string.Join(",", set));
         }
+        internal static string BystanderLabel(Bystander k) => k switch
+        {
+            Bystander.Allies => UiText.Pick("Allies (party and their summons)", "味方(仲間と召喚物)", "友方(队友及其召唤物)"),
+            Bystander.NeutralCreatures => UiText.Pick("Neutral animals and monsters", "中立の動物・モンスター", "中立的动物与怪物"),
+            Bystander.NeutralNpcs => UiText.Pick("Neutral NPCs", "中立のNPC", "中立NPC"),
+            _ => UiText.Pick("Friendly NPCs", "友好的なNPC", "友好NPC"),
+        };
+        // Classify a non-hostile character on the path; null = hostile (never blocks).
+        internal static Bystander? Kind(Chara caster, Chara ch)
+        {
+            if (ch.IsHostile(caster)) return null;
+            if (ch.IsPCFactionOrMinion || ch.IsPCParty) return Bystander.Allies;
+            if (ch.hostility >= Hostility.Friend) return Bystander.FriendlyNpcs;
+            return ch.IsHumanSpeak ? Bystander.NeutralNpcs : Bystander.NeutralCreatures;
+        }
+        const string KeyTkMp = "psion_tk_mp"; // TK mana cost multiplier for Psions; default 0.5, 0 = free
+        internal static float TkMpMult(Chara c) =>
+            float.TryParse(c.GetStr(KeyTkMp), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float v) && v >= 0 ? v : 0.5f;
+        internal static void SetTkMpMult(Chara c, float v) =>
+            c.SetStr(KeyTkMp, Math.Abs(v - 0.5f) < 0.0001f ? null : v.ToString("R", System.Globalization.CultureInfo.InvariantCulture));
+        internal static void OpenConfig() => SettingsUi.Open();
     }
 
     // Psicraft XP mirrors the spell XP each power earns (success and fizzle alike).
@@ -87,9 +89,11 @@ namespace PsionClass
             var mode = PsionCombat.Tk;
             if (mode == PsionCombat.TkMode.Off || (mode == PsionCombat.TkMode.PullOnly && adjacent) || (mode == PsionCombat.TkMode.PushOnly && !adjacent))
             { __result = false; return; }
-            if (adjacent)
-                foreach (var p in __instance.ListPath(cc.pos, tc.pos))
-                    if (!p.Equals(tc.pos) && p.ListCharas().Any(ch => ch != cc && ch != tc && !ch.IsHostile(cc))) { __result = false; return; }
+            // ListPath is mode-correct: a pull lists the squares between target and caster (never past the target);
+            // a hurl lists the squares beyond the target. Check only the path this cast will travel.
+            foreach (var p in __instance.ListPath(cc.pos, tc.pos))
+                if (!p.Equals(tc.pos) && p.ListCharas().Any(ch => ch != cc && ch != tc && PsionCombat.Kind(cc, ch) is PsionCombat.Bystander k && PsionCombat.Blocks(cc, k)))
+                { __result = false; return; }
         }
     }
 
@@ -114,10 +118,19 @@ namespace PsionClass
                 var le = b.GetComponent<UnityEngine.UI.LayoutElement>(); if (le) le.ignoreLayout = false;
                 var row = __instance.ddTactics.transform; while (row.parent != parent && row.parent != null) row = row.parent;
                 b.transform.SetSiblingIndex(row.parent == parent ? row.GetSiblingIndex() + 1 : parent.childCount - 1);
-                ((RectTransform)b.transform).sizeDelta = new Vector2(240, 28);
+                ((RectTransform)b.transform).sizeDelta = new Vector2(200, 30);
                 UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)parent);
                 b.SetToggle(false, null);
                 b.onClick.RemoveAllListeners();
+                foreach (var img in b.GetComponentsInChildren<UnityEngine.UI.Image>(true)) img.enabled = false; // drop the checkbox square
+                var surface = new GameObject("Psion action surface", typeof(RectTransform), typeof(UnityEngine.UI.Image));
+                var sr = (RectTransform)surface.transform; sr.SetParent(b.transform, false); sr.SetAsFirstSibling();
+                sr.anchorMin = Vector2.zero; sr.anchorMax = Vector2.one; sr.offsetMin = new Vector2(-4, -2); sr.offsetMax = new Vector2(4, 2);
+                var si = surface.GetComponent<UnityEngine.UI.Image>(); si.color = new Color(.38f, .28f, .16f, .14f);
+                var ol = surface.AddComponent<UnityEngine.UI.Outline>(); ol.effectColor = new Color(.38f, .28f, .16f, .35f); ol.effectDistance = new Vector2(1, -1);
+                b.targetGraphic = si;
+                b.mainText.alignment = TextAnchor.MiddleCenter;
+                var mt = b.mainText.rectTransform; mt.anchorMin = Vector2.zero; mt.anchorMax = Vector2.one; mt.offsetMin = mt.offsetMax = Vector2.zero;
                 b.onClick.AddListener(() => PsionCombat.OpenConfig());
                 b.mainText.SetText(UiText.Pick("Psion settings...", "サイオン設定...", "灵能者设置..."));
             }
@@ -198,6 +211,20 @@ namespace PsionClass
             item.text2.text = "-";
             (__instance as Act)?.SetImage(item.image1);
             return false;
+        }
+    }
+}
+
+namespace PsionClass
+{
+    // A Psion's Telekinesis mana cost x multiplier (default 0.5, floor; 0 = free).
+    [HarmonyLib.HarmonyPatch(typeof(Element), nameof(Element.GetCost))]
+    static class PsionTelekinesisCost
+    {
+        static void Postfix(Element __instance, Chara c, ref Act.Cost __result)
+        {
+            if (__instance.id != PsionData.Telekinesis || c == null || !c.HasElement(PsionData.FeatPsion) || __result.type != Act.CostType.MP) return;
+            __result.cost = (int)Math.Floor(__result.cost * PsionCombat.TkMpMult(c));
         }
     }
 }

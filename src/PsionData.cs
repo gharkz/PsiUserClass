@@ -90,9 +90,9 @@ namespace PsionClass
             var r = Clone(E.alias["featWizard"]);
             r.id = FeatPsion; r.alias = "featPsion";
             SetText(r, "name", "Psionic Mind", "サイオンの素質", "灵能天赋");
-            SetText(r, "textExtra", "Unlocks psionic powers as Psicraft grows,Telekinesis collision dice sides x2 (adjustable in Psion settings),Mind damage you deal to the undead lashes back at you",
-                "サイクラフトの成長でサイ能力を得る,テレキネシスの衝突ダイスの面数2倍(サイオン設定で変更可),アンデッドに与えた精神ダメージは自分に跳ね返る(精神反動)",
-                "随灵能术成长解锁灵能,念动术碰撞骰面数x2(可在灵能者设置中调整),对不死者造成的精神伤害会反噬自身(精神反噬)");
+            SetText(r, "textExtra", "Unlocks psionic powers as Psicraft grows,Telekinesis: collision dice sides x2 and mana cost x0.5 (adjustable in Psion settings),Mind damage you deal to the undead lashes back at you",
+                "サイクラフトの成長でサイ能力を得る,テレキネシス: 衝突ダイスの面数2倍、マナ消費0.5倍(サイオン設定で変更可),アンデッドに与えた精神ダメージは自分に跳ね返る(精神反動)",
+                "随灵能术成长解锁灵能,念动术: 碰撞骰面数x2,魔力消耗x0.5(可在灵能者设置中调整),对不死者造成的精神伤害会反噬自身(精神反噬)");
             SetText(r, "textPhase", "You have psychic powers.", "あなたにはサイの力がある。", "你拥有灵能之力。");
             SetText(r, "textInc", "You have psychic powers.", "あなたにはサイの力がある。", "你拥有灵能之力。");
             r.max = 1;
