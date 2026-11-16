@@ -11,6 +11,19 @@ namespace PsionClass
         const int KeyTkMode = 794001; // Chara int map key
         internal enum TkMode { Off = 0, PullOnly = 1, PushOnly = 2, Both = 3 }
         internal static TkMode Tk { get => (TkMode)EClass.pc.GetInt(KeyTkMode); set => EClass.pc.SetInt(KeyTkMode, (int)value); }
+        const int KeyTkDice = 794003; // percent; 0 = default (200)
+        internal static readonly int[] TkDiceSteps = { 100, 150, 200, 250, 300 };
+        internal static int TkDicePct(Chara c) { int v = c.GetInt(KeyTkDice); return v <= 0 ? 200 : v; }
+        internal static void CycleTkDice(Chara c)
+        {
+            int i = Array.IndexOf(TkDiceSteps, TkDicePct(c));
+            c.SetInt(KeyTkDice, TkDiceSteps[(i + 1) % TkDiceSteps.Length]);
+        }
+        internal static void ApplyTkDice(Card c, Dice d)
+        {
+            if (d != null && c is Chara ch && ch.HasElement(PsionData.FeatPsion))
+                d.sides = Math.Max(1, d.sides * TkDicePct(ch) / 100); // integer floor
+        }
         internal static string Label(TkMode m) => m switch
         {
             TkMode.PullOnly => UiText.Pick("Pull distant foes only", "離れた敵を引き寄せるのみ", "仅拉近远处敌人"),
@@ -24,17 +37,18 @@ namespace PsionClass
         internal static void OpenConfig()
         {
             var pc = EClass.pc;
-            var rows = new List<int> { 0, -1 };                     // 0 = reminder, -1 = TK mode
+            var rows = new List<int> { 0, -1, -2 };                 // 0 = reminder, -1 = TK mode, -2 = TK dice
             rows.AddRange(PsionData.Unlocks.Select(u => u.id).Distinct());
             var layer = EClass.ui.AddLayer<LayerList>();
             layer.SetHeader(UiText.Pick("Psion settings", "サイオン設定", "灵能者设置"));
-            layer.SetSize(640, 0);
+            layer.SetSize(680, 460);
             layer.SetList2(rows, r =>
             {
                 if (r == 0) return UiText.Pick("! Back up your save first. Turning a power back on clears its spell stock.",
                     "! 先にセーブをバックアップしてください。能力を再びオンにするとその呪文のストックは消えます。",
                     "! 请先备份存档。重新开启能力会清除其法术储备。");
                 if (r == -1) return UiText.Pick("Auto-combat Telekinesis: ", "自動戦闘のテレキネシス: ", "自动战斗念动术: ") + Label(Tk);
+                if (r == -2) return UiText.Pick("Telekinesis collision dice sides: x", "テレキネシス衝突ダイスの面数: x", "念动术碰撞骰面数: x") + (TkDicePct(pc) / 100f).ToString("0.##");
                 int lv = PsionData.Unlocks.First(u => u.id == r).lv;
                 return (PowerConfig.Enabled(pc, r) ? "● " : "○ ") + EClass.sources.elements.map[r].GetName()
                     + UiText.Pick("  (Psicraft ", "  (サイクラフト", "  (灵能术") + lv + ")";
@@ -42,6 +56,7 @@ namespace PsionClass
             {
                 if (r == 0) return;
                 if (r == -1) Tk = (TkMode)(((int)Tk + 1) % 4);
+                else if (r == -2) CycleTkDice(pc);
                 else PowerConfig.Toggle(pc, r);
                 layer.list.List();
             }, (r, item) => { }, autoClose: false);
@@ -87,14 +102,15 @@ namespace PsionClass
         {
             try
             {
-                var parent = __instance.toggleBTurbo.transform.parent;
+                // Always-visible group (the Details toggle's row), not the Details-only section.
+                var anchor = __instance.toggleDetail;
+                var parent = anchor.transform.parent;
                 var existing = parent.Find(Name);
                 if (!PsionData.IsPsion(EClass.pc)) { if (existing) existing.gameObject.SetActive(false); return; }
                 if (existing) { existing.gameObject.SetActive(true); return; }
-                var b = UnityEngine.Object.Instantiate(__instance.toggleBTurbo, parent);
+                var b = UnityEngine.Object.Instantiate(anchor, parent);
                 b.name = Name;
-                b.transform.SetSiblingIndex(0);
-                b.onClick.RemoveAllListeners();
+                b.transform.SetSiblingIndex(anchor.transform.GetSiblingIndex() + 1);
                 b.SetToggle(false, null);
                 b.onClick.RemoveAllListeners();
                 b.onClick.AddListener(() => PsionCombat.OpenConfig());
@@ -145,7 +161,7 @@ namespace PsionClass
     {
         static void Postfix(string id, Card c, Dice __result)
         {
-            if (__result != null && id == "SpTelekinesis" && c is Chara ch && ch.HasElement(PsionData.FeatPsion)) __result.sides *= 2;
+            if (id == "SpTelekinesis") PsionCombat.ApplyTkDice(c, __result);
         }
     }
 }
@@ -158,7 +174,7 @@ namespace PsionClass
     {
         static void Postfix(Element ele, Card c, Dice __result)
         {
-            if (__result != null && ele?.id == PsionData.Telekinesis && c is Chara ch && ch.HasElement(PsionData.FeatPsion)) __result.sides *= 2;
+            if (ele?.id == PsionData.Telekinesis) PsionCombat.ApplyTkDice(c, __result);
         }
     }
 }
