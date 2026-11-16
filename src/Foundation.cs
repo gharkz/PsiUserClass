@@ -96,6 +96,17 @@ namespace PsionClass
         }
     }
 
+    // The Psion strategy left the player dropdown; move anyone who had it to Mage (closest match).
+    [HarmonyPatch(typeof(Game), nameof(Game.Load))]
+    static class MigratePsionStrategy
+    {
+        static void Postfix()
+        {
+            try { var at = EClass.game?.config?.autoCombat; if (at != null && at.idType == PsionData.JobId) { at.idType = "wizard"; EClass.pc._tactics = null; } }
+            catch (Exception e) { Plugin.Report(e); }
+        }
+    }
+
     // PC: runs on creation, skill level-up, learning, feat change and load (Game.ApplyFix).
     [HarmonyPatch(typeof(ElementContainerCard), nameof(ElementContainerCard.CheckSkillActions))]
     static class UnlockOnSkillCheck

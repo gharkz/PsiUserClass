@@ -90,6 +90,9 @@ namespace PsionClass
             var landing = pullPath[pullPath.Count - 1];
             return landing.Distance(cc.pos) == 1 && tk.ListPath(cc.pos, landing).Count > 1;
         }
+        const string KeyBonusOff = "psion_ai_bonus_off";
+        internal static bool BonusOn(Chara c) => string.IsNullOrEmpty(c.GetStr(KeyBonusOff)); // default on
+        internal static void SetBonusOn(Chara c, bool on) => c.SetStr(KeyBonusOff, on ? null : "1");
         internal static void OpenConfig() => SettingsUi.Open();
     }
 
@@ -282,7 +285,9 @@ namespace PsionClass
             try
             {
                 var owner = __instance.owner;
-                if (owner == null || !owner.HasElement(PsionData.FeatPsion) || owner.tactics?.source?.id != PsionData.JobId) return;
+                if (owner == null || !owner.HasElement(PsionData.FeatPsion)) return;
+                // Player: overlay on any chosen strategy (toggle). NPC Psions: only with their own psion tactics.
+                if (owner.IsPC ? !PsionCombat.BonusOn(owner) : owner.tactics?.source?.id != PsionData.JobId) return;
                 var cfg = owner.IsPC ? owner : null;
                 foreach (var a in __instance.abilities)
                 {

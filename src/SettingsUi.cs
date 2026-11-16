@@ -64,11 +64,13 @@ namespace PsionClass
                     Click = r => { PsionCombat.ToggleBlock(pc, kind); r.Checked = PsionCombat.Blocks(pc, kind); if (r.Mark) r.Mark.gameObject.SetActive(r.Checked.Value); } });
             }
             rows.Add(new Row { Heading = true, Label = UiText.Pick("Powers", "能力", "能力") });
+            rows.Add(new Row { Label = UiText.Pick("Apply AutoCombat bonuses (on top of any strategy)", "自動戦闘ボーナスを適用(どの作戦にも上乗せ)", "应用自动战斗加成(叠加于任何战术)"), Checked = PsionCombat.BonusOn(pc),
+                Click = r => { PsionCombat.SetBonusOn(pc, !PsionCombat.BonusOn(pc)); r.Checked = PsionCombat.BonusOn(pc); if (r.Mark) r.Mark.gameObject.SetActive(r.Checked.Value); } });
             rows.Add(new Row { Note = true, Info = true, Label = UiText.Pick("Checked = innate (no spell stock). Click a number to change it.",
                 "チェック=生得(ストック不要)。数値をクリックで変更。", "勾选=天生(无需储备)。点击数值可修改。") });
-            rows.Add(new Row { Note = true, Info = true, Label = UiText.Pick("AutoCombat bonus: the higher it is, the more often AutoCombat picks that power when it's available (Psion strategy only).",
-                "自動戦闘ボーナス: 高いほど、使用可能な時に自動戦闘がその能力を選びやすくなる(サイオン作戦のみ)。",
-                "自动战斗加成: 数值越高,自动战斗在可用时越常选择该能力(仅灵能者战术)。") });
+            rows.Add(new Row { Note = true, Info = true, Label = UiText.Pick("AutoCombat bonus: the higher it is, the more often AutoCombat picks that power when it's available when the bonuses are applied.",
+                "自動戦闘ボーナス: 高いほど、使用可能な時に自動戦闘がその能力を選びやすくなる(ボーナス適用時)。",
+                "自动战斗加成: 数值越高,自动战斗在可用时越常选择该能力(应用加成时)。") });
             rows.Add(new Row { ColumnHeader = true, Label = UiText.Pick("Power", "能力", "能力"), Value = UiText.Pick("Unlocks at", "解放レベル", "解锁等级"), Value2 = UiText.Pick("AutoCombat bonus", "自動戦闘ボーナス", "自动战斗加成") });
             foreach (var (lv, id) in PsionData.Unlocks.GroupBy(u => u.id).Select(g => g.First()))
                 rows.Add(new Row

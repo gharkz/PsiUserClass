@@ -188,6 +188,7 @@ namespace PsionClass
             SetText(r, "name", "Psion", "サイオン", "灵能者");
             r.dist = 2; r.move = 50; r.movePC = 0; r.taunt = -1;
             r.melee = 55; r.range = 50; r.spell = 70; r.heal = 60; r.summon = 55; r.buff = 50; r.debuff = 45; r.party = -20;
+            r.tag = (r.tag ?? new string[0]).Where(t => t != "pc").ToArray(); // NPC tactics only; players overlay bonuses on any strategy
             T.rows.Add(r);
             T.map[r.id] = r;
         }
