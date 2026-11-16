@@ -38,8 +38,11 @@ namespace PsionClass
 
         static string TkMp(Chara pc)
         {
-            float m = pc != null && EClass.core.IsGameStarted ? PsionCombat.TkMpMult(pc) : 0.5f;
-            return "x" + m.ToString("0.##", CultureInfo.InvariantCulture);
+            bool live = pc != null && EClass.core.IsGameStarted;
+            if (live && PsionCombat.TkFixed(pc) is int f) return UiText.Pick("a fixed " + f + " MP", "固定" + f + "MP", "固定" + f + "点");
+            float m = live ? PsionCombat.TkMpMult(pc) : 0.5f;
+            string x = "x" + m.ToString("0.##", CultureInfo.InvariantCulture);
+            return UiText.Pick(x + " the mana", x, x);
         }
 
         static IEnumerable<string> Awakening(Chara pc)

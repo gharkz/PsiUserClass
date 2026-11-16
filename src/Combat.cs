@@ -67,6 +67,9 @@ namespace PsionClass
             if (ch.hostility >= Hostility.Friend) return Bystander.FriendlyNpcs;
             return ch.IsHumanSpeak ? Bystander.NeutralNpcs : Bystander.NeutralCreatures;
         }
+        const string KeyTkFixed = "psion_tk_fixed"; // fixed MP cost (int >= 0); unset = use the multiplier
+        internal static int? TkFixed(Chara c) => int.TryParse(c.GetStr(KeyTkFixed), out int v) && v >= 0 ? v : (int?)null;
+        internal static void SetTkFixed(Chara c, int? v) => c.SetStr(KeyTkFixed, v.HasValue ? v.Value.ToString() : null);
         const string KeyTkMp = "psion_tk_mp"; // TK mana cost multiplier for Psions; default 0.5, 0 = free
         internal static float TkMpMult(Chara c) =>
             float.TryParse(c.GetStr(KeyTkMp), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float v) && v >= 0 ? v : 0.5f;
@@ -252,6 +255,8 @@ namespace PsionClass
         static void Postfix(Element __instance, Chara c, ref Act.Cost __result)
         {
             if (__instance.id != PsionData.Telekinesis || c == null || !c.HasElement(PsionData.FeatPsion) || __result.type != Act.CostType.MP) return;
+            var fixedCost = PsionCombat.TkFixed(c);
+            if (fixedCost.HasValue) { __result.cost = fixedCost.Value; return; } // ignores level scaling
             float m = PsionCombat.TkMpMult(c);
             __result.cost = m <= 0 ? 0 : Math.Max(1, (int)Math.Floor(__result.cost * m));
         }

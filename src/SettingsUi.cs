@@ -37,7 +37,9 @@ namespace PsionClass
                     "能力を変更する前にセーブをバックアップしてください。能力を再びオンにするとその呪文のストックは消えます。",
                     "更改能力前请先备份存档。重新开启能力会清除其法术储备。") },
                 new Row { Heading = true, Label = UiText.Pick("Telekinesis", "テレキネシス", "念动术") },
-                new Row { Label = UiText.Pick("Mana cost multiplier (0 = free)", "マナ消費の倍率(0=無料)", "魔力消耗倍率(0=免费)"), Value = "x" + Fmt(PsionCombat.TkMpMult(pc)), Click = EditMp },
+                new Row { Label = UiText.Pick("Fixed mana cost (overrides multiplier)", "固定マナ消費(倍率より優先)", "固定魔力消耗(优先于倍率)"), Value = FixedText(pc), Click = EditFixed },
+                new Row { Label = UiText.Pick("Mana cost multiplier (0 = free)", "マナ消費の倍率(0=無料)", "魔力消耗倍率(0=免费)"), Value = "x" + Fmt(PsionCombat.TkMpMult(pc)), Click = EditMp,
+                    Disabled = () => PsionCombat.TkFixed(EClass.pc).HasValue },
                 new Row { Label = UiText.Pick("Collision dice sides multiplier", "衝突ダイス面数の倍率", "碰撞骰面数倍率"), Value = "x" + Fmt(PsionCombat.TkDiceMult(pc)), Click = EditDice },
                 new Row { Group = 1, Heading = true, Label = UiText.Pick("Auto-combat Telekinesis", "自動戦闘でのテレキネシス", "自动战斗中的念动术") },
                 new Row { Group = 2, Label = UiText.Pick("Use", "使用", "使用"), Value = PsionCombat.Label(PsionCombat.Tk), Click = ChooseTkMode },
@@ -268,6 +270,33 @@ namespace PsionClass
                     }
                     PowerConfig.SetLevel(pc, id, lv);
                     SetValue(row, UiText.Pick("Psicraft ", "サイクラフト", "灵能术") + lv);
+                }, Dialog.InputType.Default);
+        }
+
+        static string FixedText(Chara pc) => PsionCombat.TkFixed(pc) is int f ? f + " MP" : UiText.Pick("Off", "オフ", "关闭");
+
+        // Whole number 0-999 (decimals truncated). Empty turns it off. Anything else is dropped and the old value kept.
+        static void EditFixed(Row row)
+        {
+            var pc = EClass.pc;
+            Modals.Input(UiText.Pick("Fixed Telekinesis mana cost (0-999, empty = off)", "テレキネシスの固定マナ消費(0～999、空欄=オフ)", "念动术固定魔力消耗(0-999,留空=关闭)"),
+                PsionCombat.TkFixed(pc)?.ToString() ?? "", (cancel, text) =>
+                {
+                    if (cancel) return;
+                    var t = (text ?? "").Trim();
+                    if (t.Length == 0) { PsionCombat.SetTkFixed(pc, null); }
+                    else
+                    {
+                        if (!double.TryParse(t, NumberStyles.Float, CultureInfo.InvariantCulture, out double v) && !double.TryParse(t, NumberStyles.Float, CultureInfo.CurrentCulture, out v)
+                            || double.IsNaN(v) || double.IsInfinity(v) || v < 0 || v >= 1000)
+                        {
+                            Msg.Say(UiText.Pick("Not a valid cost (a whole number 0 to 999). Kept ", "無効な値です(0～999の整数)。", "数值无效(0至999的整数)。保留") + FixedText(pc) + UiText.Pick(".", "のままです。", "。"));
+                            return;
+                        }
+                        PsionCombat.SetTkFixed(pc, (int)Math.Truncate(v));
+                    }
+                    SetValue(row, FixedText(pc));
+                    RefreshStates();
                 }, Dialog.InputType.Default);
         }
 
