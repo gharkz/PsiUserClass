@@ -56,7 +56,7 @@ Rare equipment is said to carry this gift as well.
 
 <b>Psionic Edge</b>
 
-Your mind steadies your hands. Harvesting tools bite harder, and the crafts and fine skills you have learned come easier. The edge grows slowly with Psicraft:
+Your mind steadies your hands. The edge adds to your harvesting tools' effective hardness, and to the level of any craft or fine skill you have learned when you use it. It grows with Psicraft:
 
 * Psicraft 1: +1
 * Psicraft 5: +2
@@ -66,6 +66,10 @@ Your mind steadies your hands. Harvesting tools bite harder, and the crafts and 
 * Psicraft 52: +6
 * Psicraft 100: +7
 * Psicraft 200: +8
+
+At Psicraft 5 (+2), a basalt pickaxe (hardness 52) hits as if it were 54, and carpentry 10 works as carpentry 12 when you craft a chair.
+
+Note: it does not count toward the skill needed to learn recipes by dismantling.
 
 {p}
 

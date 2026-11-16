@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.2 (beta)
+
+Primer: Psionic Edge now spells out what it boosts (harvesting tools' effective hardness, and the level of learned crafts and fine skills when used), with two examples and a note that it does not count toward learning recipes by dismantling.
+
+日本語
+入門書: サイオニック・エッジの効果(採取道具の実質的な硬さと、使用時の製作・技術のレベル)を明記し、例を2つと、分解でのレシピ習得には含まれない旨の注意を追加。
+
+简体中文
+入门书: 明确说明灵能锋刃的效果(采集工具的有效硬度,以及使用时制作与技巧的等级),并加入两个例子和“不计入通过分解学习配方”的注意事项。
+
 ## 0.1.1 (beta)
 
 Kinetic (Impact) powers now count as physical: armor (PV) and physical damage reduction (PDR) apply, elemental damage reduction (EDR) no longer does. The primer explains this and adds a short page on Psi-Shield and Psi-Teleport. Description: the settings let you balance the class your way and rename it.
