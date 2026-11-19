@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.3
+Fix: Necropathy showed the Looter feat's texts. It now has its own description and feat-list line, and its hover card lists what each rank gives, like vanilla feats (current rank and the next).
+
 ## 0.1.2 (beta)
 
 Primer: Psionic Edge now spells out what it boosts (harvesting tools' effective hardness, and the level of learned crafts and fine skills when used), with two examples and a note that it does not count toward learning recipes by dismantling.

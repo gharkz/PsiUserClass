@@ -106,9 +106,19 @@ namespace PsionClass
             var r = Clone(E.alias["featLooter"]);
             r.id = FeatNecropathy; r.alias = "featNecropathy";
             SetText(r, "name", "Necropathy", "ネクロパシー", "死灵感应");
-            SetText(r, "textExtra", "Rank 1: no whiplash from the undead,Rank 2: mind attacks affect the undead at half strength,Rank 3: mind attacks affect the undead fully",
-                "ランク1: アンデッドからの精神反動を受けない,ランク2: 精神攻撃がアンデッドに半分の効果,ランク3: 精神攻撃がアンデッドに完全な効果",
-                "等级1: 不再受到不死者的精神反噬,等级2: 精神攻击对不死者造成一半效果,等级3: 精神攻击对不死者完全有效");
+            SetText(r, "detail", "Attune your mind to the undead.", "アンデッドに心を通わせる。", "让心灵与不死者相通。");
+            SetText(r, "textPhase", "Your mind is attuned to the undead.", "あなたの心はアンデッドに通じている。", "你的心灵与不死者相通。"); // feat list line (was Looter's) // the clone kept Looter's line
+            // One line per rank (the hover card shows the current rank and the next); commas separate a rank's points.
+            SetText(r, "textExtra",
+                "Shrug off psychic backlash from the undead\n" +
+                "Shrug off psychic backlash from the undead,Mind attacks reach the undead at 50% effect\n" +
+                "Shrug off psychic backlash from the undead,Mind attacks reach the undead at 100% effect",
+                "アンデッドからの精神反動を受けない\n" +
+                "アンデッドからの精神反動を受けない,精神攻撃がアンデッドに50%の効果\n" +
+                "アンデッドからの精神反動を受けない,精神攻撃がアンデッドに100%の効果",
+                "不再受到不死者的精神反噬\n" +
+                "不再受到不死者的精神反噬,精神攻击对不死者有50%效果\n" +
+                "不再受到不死者的精神反噬,精神攻击对不死者有100%效果");
             r.req = new[] { "psicraft", "10", "20", "30" };
             r.cost = new[] { 1, 2, 3 };
             r.max = 3;
