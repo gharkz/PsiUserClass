@@ -134,5 +134,6 @@ The strategy view on your character sheet has a Psion settings button.
 * AutoCombat throws loose objects or enemies into enemies, never through allies, neutrals or you; otherwise it hurls an enemy randomly, away or toward you. Enemies beside you are left to cheaper Telekinesis. Throwing allies is optional.
 * Each power has an AutoCombat checkbox. Psi-Strike's cost is adjustable.
 * Sound: the Telekinesis sound can be muted, or swapped per power for another sound.
+* Lost this book? Psion settings give you a new copy, once a day.
 
 Back up your save before changing powers.

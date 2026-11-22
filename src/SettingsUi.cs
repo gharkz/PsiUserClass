@@ -41,6 +41,7 @@ namespace PsionClass
                     "能力を変更する前にセーブをバックアップしてください。能力を再びオンにするとその呪文のストックは消えます。",
                     "更改能力前请先备份存档。重新开启能力会清除其法术储备。") },
                 new Row { Label = UiText.Pick("Class name (this language)", "クラス名(この言語)", "职业名称(当前语言)"), Value = ClassName.Current, Click = EditClassName },
+                new Row { Label = UiText.Pick("Get a new copy of the primer (once a day)", "入門書をもう一冊もらう(1日1回)", "再领取一本入门书(每天一次)"), Click = _ => NewPrimer() },
                 new Row { Heading = true, Label = UiText.Pick("Telekinesis", "テレキネシス", "念动术") },
                 new Row { Label = UiText.Pick("Use a fixed mana cost (ignores spell level)", "固定マナ消費を使う(呪文レベル無関係)", "使用固定魔力消耗(不受法术等级影响)"), Checked = PsionCombat.TkFixedOn(pc),
                     Click = r => { PsionCombat.SetTkFixedOn(pc, !PsionCombat.TkFixedOn(pc)); r.Checked = PsionCombat.TkFixedOn(pc); if (r.Mark) r.Mark.gameObject.SetActive(r.Checked.Value); RefreshStates(); } },
@@ -377,6 +378,21 @@ namespace PsionClass
                     PsionCombat.SetHeavyFactor(pc, v);
                     SetValue(row, "x" + Fmt(v));
                 }, Dialog.InputType.Default);
+        }
+
+        // A lost primer can be replaced, at most once per in-game day (no farming).
+        const string KeyPrimerDay = "psion_primer_day";
+        static void NewPrimer()
+        {
+            var pc = EClass.pc;
+            int today = EClass.world.date.GetRawDay();
+            if (int.TryParse(pc.GetStr(KeyPrimerDay), out int last) && last == today)
+            {
+                Msg.Say(UiText.Pick("You already received a copy today.", "今日はもう受け取った。", "今天已经领取过了。"));
+                return;
+            }
+            pc.SetStr(KeyPrimerDay, today.ToString());
+            pc.Pick(ThingGen.CreateRedBook("guide_psion"));
         }
 
         static void EditHurlFixed(Row row)
