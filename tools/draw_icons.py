@@ -1,4 +1,4 @@
-"""ORIGINAL 32x32 icons (drawn from scratch; no game assets used): Psi-Shield, Psi-Teleport."""
+"""ORIGINAL 32x32 icons (drawn from scratch; no game assets used): Psi-Shield, Psi-Teleport, Psi-Hurl, Psi-Strike."""
 from PIL import Image, ImageDraw
 import os, math
 OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets")
@@ -28,6 +28,28 @@ def teleport():
     d.polygon([(24, 3), (29, 3), (29, 8)], fill=CYAN)                         # destination marker
     return im
 
-for name, f in (("psishield.png", shield), ("psiteleport.png", teleport)):
+def hurl():
+    im = Image.new("RGBA", (32, 32), (0, 0, 0, 0)); d = ImageDraw.Draw(im); glow(d, 16, 16)
+    for i, y in enumerate((9, 14, 19)):                                       # motion streaks trailing left-down
+        d.line([(3 + i, y + 6), (13 + i, y)], fill=VIO_L if i != 1 else CYAN, width=2)
+    d.polygon([(14, 9), (24, 6), (28, 15), (19, 19)], fill=VIO, outline=VIO_D)  # flung block (top/front faces)
+    d.polygon([(19, 19), (28, 15), (27, 22), (19, 26)], fill=VIO_D)
+    d.polygon([(14, 9), (19, 19), (19, 26), (14, 17)], fill=VIO_L)
+    d.polygon([(25, 2), (31, 2), (31, 8)], fill=CYAN)                         # throw direction marker
+    d.line([(22, 10), (29, 3)], fill=CYAN, width=1)
+    return im
+
+def strike():
+    im = Image.new("RGBA", (32, 32), (0, 0, 0, 0)); d = ImageDraw.Draw(im); glow(d, 16, 16)
+    d.arc((4, 4, 28, 28), 200, 340, fill=CYAN, width=2)                      # flight arc out and back
+    d.arc((7, 7, 25, 25), 20, 160, fill=VIO_L, width=1)
+    d.polygon([(25, 6), (28, 9), (12, 25), (9, 22)], fill=VIO_L, outline=VIO_D)  # blade
+    d.line([(26, 7), (11, 23)], fill=(255, 255, 255, 255), width=1)           # edge glint
+    d.polygon([(7, 20), (12, 25), (10, 27), (5, 22)], fill=VIO_D)             # guard
+    d.line([(7, 25), (4, 28)], fill=INK, width=3)                             # grip
+    d.polygon([(2, 9), (6, 5), (7, 10)], fill=CYAN)                           # return marker
+    return im
+
+for name, f in (("psishield.png", shield), ("psiteleport.png", teleport), ("psihurl.png", hurl), ("psistrike.png", strike)):
     im = f(); im.save(os.path.join(OUT, name)); im.resize((128, 128), Image.NEAREST).save(os.path.join(OUT, name.replace(".png", "-preview-4x.png")))
 print("ok")

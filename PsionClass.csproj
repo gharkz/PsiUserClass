@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework><LangVersion>latest</LangVersion>
-    <Authors>gharkz</Authors><Version>0.1.3</Version>
+    <Authors>gharkz</Authors><Version>0.2.0</Version>
     <AssemblyName>PsionClass</AssemblyName><RootNamespace>PsionClass</RootNamespace>
     <ElinGamePath Condition="'$(ElinGamePath)' == ''">X:/SteamLibrary/steamapps/common/Elin</ElinGamePath>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
@@ -15,17 +15,19 @@
     <Reference Include="$(ElinGamePath)/Elin_Data/Managed/Elin.dll" Private="false" />
     <Reference Include="$(ElinGamePath)/Elin_Data/Managed/Plugins.UI.dll" Private="false" />
     <Reference Include="$(ElinGamePath)/Elin_Data/Managed/Plugins.BaseCore.dll" Private="false" />
+    <Reference Include="$(ElinGamePath)/Elin_Data/Managed/Plugins.Sound.dll" Private="false" />
     <Reference Include="$(ElinGamePath)/Elin_Data/Managed/Newtonsoft.Json.dll" Private="false" />
     <Reference Include="$(ElinGamePath)/Elin_Data/Managed/UnityEngine.dll" Private="false" />
     <Reference Include="$(ElinGamePath)/Elin_Data/Managed/UnityEngine.CoreModule.dll" Private="false" />
     <Reference Include="$(ElinGamePath)/Elin_Data/Managed/UnityEngine.ImageConversionModule.dll" Private="false" />
     <Reference Include="$(ElinGamePath)/Elin_Data/Managed/UnityEngine.UI.dll" Private="false" />
+    <Reference Include="$(ElinGamePath)/Elin_Data/Managed/UnityEngine.InputLegacyModule.dll" Private="false" />
     <Reference Include="$(ElinGamePath)/Elin_Data/Managed/UnityEngine.TextRenderingModule.dll" Private="false" />
     <Reference Include="$(ElinGamePath)/BepInEx/core/BepInEx.Core.dll" Private="false" />
     <Reference Include="$(ElinGamePath)/BepInEx/core/BepInEx.Unity.dll" Private="false" />
     <Reference Include="$(ElinGamePath)/BepInEx/core/0Harmony.dll" Private="false" />
     <None Include="LangMod/**/*.txt" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="assets/psishield.png;assets/psiteleport.png" CopyToOutputDirectory="PreserveNewest" LinkBase="assets" />
+    <None Include="assets/psishield.png;assets/psiteleport.png;assets/psihurl.png;assets/psistrike.png" CopyToOutputDirectory="PreserveNewest" LinkBase="assets" />
     <None Include="package.xml;preview.jpg" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

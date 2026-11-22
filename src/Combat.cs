@@ -90,6 +90,124 @@ namespace PsionClass
             var landing = pullPath[pullPath.Count - 1];
             return landing.Distance(cc.pos) == 1 && tk.ListPath(cc.pos, landing).Count > 1;
         }
+        const string KeyHurlFull = "psion_hurl_full"; // Psi-Hurl always flies the full 20 tiles
+        internal static bool HurlFull(Chara c) => !string.IsNullOrEmpty(c.GetStr(KeyHurlFull));
+        internal static void SetHurlFull(Chara c, bool on) => c.SetStr(KeyHurlFull, on ? "1" : null);
+        const string KeyTkcAlliesOff = "psion_tkc_allies_off"; // Telekinetic Control protects allies in your Psi-Hurl (default on)
+        internal static bool TkControlAllies(Chara c) => string.IsNullOrEmpty(c.GetStr(KeyTkcAlliesOff));
+        internal static void SetTkControlAllies(Chara c, bool on) => c.SetStr(KeyTkcAlliesOff, on ? null : "1");
+        // AutoCombat may throw allies with Psi-Hurl (default off), optionally only at a Telekinetic Control rank (default on, rank 2).
+        const string KeyAllyAmmo = "psion_hurl_allies", KeyAllyReqOff = "psion_hurl_allies_req_off", KeyAllyReqRank = "psion_hurl_allies_rank";
+        internal static bool AllyAmmo(Chara c) => !string.IsNullOrEmpty(c.GetStr(KeyAllyAmmo));
+        internal static void SetAllyAmmo(Chara c, bool on) => c.SetStr(KeyAllyAmmo, on ? "1" : null);
+        internal static bool AllyReqOn(Chara c) => string.IsNullOrEmpty(c.GetStr(KeyAllyReqOff));
+        internal static void SetAllyReqOn(Chara c, bool on) => c.SetStr(KeyAllyReqOff, on ? null : "1");
+        internal static int AllyReqRank(Chara c) => c.GetStr(KeyAllyReqRank) == "1" ? 1 : 2;
+        internal static void ToggleAllyReqRank(Chara c) => c.SetStr(KeyAllyReqRank, AllyReqRank(c) == 2 ? "1" : null);
+        internal static bool AllyAmmoAllowed(Chara c) => AllyAmmo(c) && (!AllyReqOn(c)
+            || (TkControlAllies(c) && c.elements.ValueWithoutLink(PsionData.FeatTkControl) >= AllyReqRank(c)));
+        [ThreadStatic] internal static bool RawTkCost; // read Telekinesis's natural cost (skip the Psion multiplier)
+        internal enum HurlCost { CurrentTk = 0, NaturalTk = 1, Fixed = 2 }
+        const string KeyHurlCostMode = "psion_hurl_costmode", KeyHurlMult = "psion_hurl_mult", KeyHurlFixed = "psion_hurl_fixed";
+        internal static HurlCost HurlCostMode(Chara c) => int.TryParse(c.GetStr(KeyHurlCostMode), out int v) && v >= 0 && v <= 2 ? (HurlCost)v : HurlCost.CurrentTk;
+        internal static void SetHurlCostMode(Chara c, HurlCost m) => c.SetStr(KeyHurlCostMode, m == HurlCost.CurrentTk ? null : ((int)m).ToString());
+        internal static float HurlMult(Chara c) =>
+            float.TryParse(c.GetStr(KeyHurlMult), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float v) && v >= 0 ? v : 1.5f;
+        internal static void SetHurlMult(Chara c, float v) =>
+            c.SetStr(KeyHurlMult, Math.Abs(v - 1.5f) < 0.0001f ? null : v.ToString("R", System.Globalization.CultureInfo.InvariantCulture));
+        internal static int HurlFixed(Chara c) => int.TryParse(c.GetStr(KeyHurlFixed), out int v) && v >= 0 ? v : 5;
+        internal static void SetHurlFixed(Chara c, int v) => c.SetStr(KeyHurlFixed, v == 5 ? null : v.ToString());
+        internal static string HurlCostLabel(HurlCost m) => m switch
+        {
+            HurlCost.NaturalTk => UiText.Pick("x natural Telekinesis cost", "x テレキネシス本来の消費", "x 念动术原始消耗"),
+            HurlCost.Fixed => UiText.Pick("Fixed cost", "固定消費", "固定消耗"),
+            _ => UiText.Pick("x current Telekinesis cost", "x 現在のテレキネシス消費", "x 当前念动术消耗"),
+        };
+        // AutoCombat Psi-Hurl direction when hurling an enemy (default random); optionally preferred over collision throws.
+        internal enum HurlDirection { Random = 0, Away = 1, Toward = 2 }
+        const string KeyHurlDir = "psion_hurl_dir", KeyHurlDirFirst = "psion_hurl_dirfirst";
+        internal static HurlDirection HurlDir(Chara c) => int.TryParse(c.GetStr(KeyHurlDir), out int v) && v >= 0 && v <= 2 ? (HurlDirection)v : HurlDirection.Random;
+        internal static void SetHurlDir(Chara c, HurlDirection d) => c.SetStr(KeyHurlDir, d == HurlDirection.Random ? null : ((int)d).ToString());
+        internal static bool HurlDirFirst(Chara c) => !string.IsNullOrEmpty(c.GetStr(KeyHurlDirFirst));
+        internal static void SetHurlDirFirst(Chara c, bool on) => c.SetStr(KeyHurlDirFirst, on ? "1" : null);
+        internal static string HurlDirLabel(HurlDirection d) => d switch
+        {
+            HurlDirection.Away => UiText.Pick("Away from you", "自分から遠ざける", "远离你"),
+            HurlDirection.Toward => UiText.Pick("Toward you", "自分へ引き寄せる", "朝向你"),
+            _ => UiText.Pick("Random direction", "ランダムな方向", "随机方向"),
+        };
+        const string KeyStrikeCost = "psion_strike_cost"; // Psi-Strike fixed mana cost, default 12
+        internal static int StrikeCost(Chara c) => int.TryParse(c.GetStr(KeyStrikeCost), out int v) && v >= 0 ? v : 12;
+        internal static void SetStrikeCost(Chara c, int v) => c.SetStr(KeyStrikeCost, v == 12 ? null : v.ToString());
+        const string KeyPreferTkOff = "psion_hurl_prefer_tk_off"; // AutoCombat leaves adjacent enemies to Telekinesis (default on)
+        internal static bool PreferTk(Chara c) => string.IsNullOrEmpty(c.GetStr(KeyPreferTkOff));
+        internal static void SetPreferTk(Chara c, bool on) => c.SetStr(KeyPreferTkOff, on ? null : "1");
+        // The Telekinesis sound ("telekinesis") can be muted for all three powers or each one.
+        [ThreadStatic] internal static int SoundAct; // the power playing sounds right now (0 = none)
+        const string KeySndOff = "psion_tksnd_off";
+        internal static readonly int[] SoundPowers = { PsionData.Telekinesis, PsionData.PsiHurl, PsionData.PsiStrike };
+        internal static bool TkSoundOn(Chara c) => string.IsNullOrEmpty(c.GetStr(KeySndOff));
+        internal static void SetTkSoundOn(Chara c, bool on) => c.SetStr(KeySndOff, on ? null : "1");
+        // Per power: "" = the default Telekinesis sound, "-" = muted, otherwise another game sound id.
+        internal static readonly string[] SoundChoices = { "", "-", "throw", "hit_slash", "hit_blunt", "fish_splash", "push", "whip", "fizzle" };
+        internal static string SoundLabel(string v) => v switch
+        {
+            "" => UiText.Pick("Default", "標準", "默认"),
+            "-" => UiText.Pick("Muted", "無音", "静音"),
+            "throw" => UiText.Pick("Throw", "投擲", "投掷"),
+            "hit_slash" => UiText.Pick("Slash", "斬撃", "斩击"),
+            "hit_blunt" => UiText.Pick("Swat", "打撃", "打击"),
+            "fish_splash" => UiText.Pick("Splash", "水しぶき", "水花"),
+            "push" => UiText.Pick("Push", "押す", "推"),
+            "whip" => UiText.Pick("Whip", "鞭", "鞭"),
+            "fizzle" => UiText.Pick("Failed cast", "詠唱失敗", "施法失败"),
+            _ => v,
+        };
+        static string SoundKey(int id) => "psion_tksnd_" + id;
+        internal static string TkSound(Chara c, int id)
+        {
+            var v = c.GetStr(SoundKey(id)) ?? "";
+            return Array.IndexOf(SoundChoices, v) >= 0 ? v : "";
+        }
+        internal static void SetTkSound(Chara c, int id, string v) => c.SetStr(SoundKey(id), string.IsNullOrEmpty(v) ? null : v);
+        // Sound to play instead of "telekinesis" for the power playing now: null = mute, the same id = unchanged.
+        internal static string TkSoundFor(int act)
+        {
+            var pc = EClass.pc;
+            if (pc == null || act == 0 || !PsionData.IsPsion(pc)) return "telekinesis"; // Psion characters only
+            if (!TkSoundOn(pc)) return null;
+            var v = TkSound(pc, act);
+            return v == "" ? "telekinesis" : v == "-" ? null : v;
+        }
+        // Telekinetic Control rank 2: passing a creature at least twice your weight still lets 20% of the landing through.
+        const string KeyHeavyOff = "psion_tkc_heavy_off";
+        internal const int HeavyPass = 20;
+        // What makes a body "very heavy": level (default) or weight at least Factor x yours (default 2).
+        const string KeyHeavyWeight = "psion_tkc_heavy_weight", KeyHeavyFactor = "psion_tkc_heavy_factor";
+        internal static bool HeavyByWeight(Chara c) => !string.IsNullOrEmpty(c?.GetStr(KeyHeavyWeight));
+        internal static void SetHeavyByWeight(Chara c, bool on) => c.SetStr(KeyHeavyWeight, on ? "1" : null);
+        internal static float HeavyFactor(Chara c) =>
+            float.TryParse(c?.GetStr(KeyHeavyFactor), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float v) && v > 0 ? v : 2f;
+        internal static void SetHeavyFactor(Chara c, float v) =>
+            c.SetStr(KeyHeavyFactor, Math.Abs(v - 2f) < 0.0001f ? null : v.ToString("R", System.Globalization.CultureInfo.InvariantCulture));
+        internal static bool IsHeavy(Chara self, Chara other) => IsHeavy(self, self, other);
+        // cfg: whose settings decide the rule (the thrower); flier: who is flying (you or the ally you threw).
+        internal static bool IsHeavy(Chara cfg, Chara flier, Chara other) => HeavyByWeight(cfg)
+            ? other.SelfWeight >= flier.SelfWeight * (double)HeavyFactor(cfg)
+            : other.LV >= flier.LV * (double)HeavyFactor(cfg);
+        internal static string HeavyRule(Chara c, string lang)
+        {
+            string f = "x" + HeavyFactor(c).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+            bool w = HeavyByWeight(c);
+            return lang == "JP" ? (w ? "重さ" : "レベル") + "が飛ぶ者(自分か味方)の" + f + "以上"
+                 : lang == "CN" ? (w ? "重量" : "等级") + "至少为飞行者(你或友方)的" + f
+                 : (w ? "weight" : "level") + " at least " + f + " the flier's (yours or the ally's)";
+        }
+        internal static bool HeavyMatters(Chara c) => string.IsNullOrEmpty(c.GetStr(KeyHeavyOff));
+        internal static void SetHeavyMatters(Chara c, bool on) => c.SetStr(KeyHeavyOff, on ? null : "1");
+        const string KeyTkcPath = "psion_tkc_path"; // Telekinetic Control also shields you and allies in your Psi-Hurl's path (default off)
+        internal static bool TkControlPath(Chara c) => !string.IsNullOrEmpty(c.GetStr(KeyTkcPath));
+        internal static void SetTkControlPath(Chara c, bool on) => c.SetStr(KeyTkcPath, on ? "1" : null);
         const string KeyBonusOff = "psion_ai_bonus_off";
         internal static bool BonusOn(Chara c) => string.IsNullOrEmpty(c.GetStr(KeyBonusOff)); // default on
         internal static void SetBonusOn(Chara c, bool on) => c.SetStr(KeyBonusOff, on ? null : "1");
@@ -260,7 +378,7 @@ namespace PsionClass
     {
         static void Postfix(Element __instance, Chara c, ref Act.Cost __result)
         {
-            if (__instance.id != PsionData.Telekinesis || c == null || !c.HasElement(PsionData.FeatPsion) || __result.type != Act.CostType.MP) return;
+            if (PsionCombat.RawTkCost || __instance.id != PsionData.Telekinesis || c == null || !c.HasElement(PsionData.FeatPsion) || __result.type != Act.CostType.MP) return;
             var fixedCost = PsionCombat.TkFixed(c);
             if (fixedCost.HasValue) { __result.cost = fixedCost.Value; return; } // ignores level scaling
             float m = PsionCombat.TkMpMult(c);
@@ -286,6 +404,7 @@ namespace PsionClass
             {
                 var owner = __instance.owner;
                 if (owner == null || !owner.HasElement(PsionData.FeatPsion)) return;
+                if (owner.IsPC) __instance.abilities.RemoveAll(a => a.act != null && !PowerConfig.AutoOn(owner, a.act.id));
                 // Player: overlay on any chosen strategy (toggle). NPC Psions: only with their own psion tactics.
                 if (owner.IsPC ? !PsionCombat.BonusOn(owner) : owner.tactics?.source?.id != PsionData.JobId) return;
                 var cfg = owner.IsPC ? owner : null;

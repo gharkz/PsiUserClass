@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0
+- Psi-Hurl (Psicraft 5): hurl any object or creature you can see, yourself included, along a line you aim from the target's tile, like a bolt cast from there. It flies 4 tiles, +1 per 3 Telekinesis levels (max 20), or always 20 with a Psion settings option. Its description spells out the distance multiplier on collision damage. It shares Telekinesis's level and XP and has its own icon. Costs 1.5x Telekinesis. Distance, weight and higher-level creatures make it harder.
+- AutoCombat aims Psi-Hurl itself: loose objects or hostile creatures are thrown into enemies (yes, enemies into each other), never through allies, neutrals or you.
+- Psi-Strike (Psicraft 15): your normal melee attack on a target up to 8 tiles away, like a thrown blade called back. Same weapons or martial arts, same damage and skill experience; Psicraft and ability level add nothing. Fixed 12 MP (adjustable). AutoCombat uses it only on targets out of reach.
+- Telekinetic Control feat (2 ranks, 1 point each): self-hurl collision damage -50% / -100% (passing a creature of at least 2x your level still lets 20% through; optional, and level can be swapped for weight, with an adjustable multiplier), and -10% / -20% when someone else hurls you. By default it also protects allies you throw (option). Optionally it also shields you and allies in your projectile's path. These ally protections apply to Telekinesis hurls as well as Psi-Hurl. The path shield covers anything you throw, creatures included.
+- Psi-Hurl settings: mana cost as a multiplier of the current or natural Telekinesis cost, or a fixed cost (default 1.5x current). AutoCombat direction when hurling an enemy: random (default), away from you or toward you, optionally preferred over throwing into other enemies. By default AutoCombat leaves enemies beside you to the cheaper Telekinesis, unless Psi-Hurl would hit more enemies with them.
+- Psion settings: an AutoCombat checkbox per power. The Telekinesis sound effect can be turned off entirely, or set per power (Telekinesis, Psi-Hurl, Psi-Strike) to default, muted, or another sound: throw, slash, swat, splash, push, whip or failed cast. Optional: AutoCombat may throw allies with Psi-Hurl (off by default), by default only while Telekinetic Control is rank 2 and protects them (rank 1 selectable).
+
 ## 0.1.3
 Fix: Necropathy showed the Looter feat's texts. It now has its own description and feat-list line, and its hover card lists what each rank gives, like vanilla feats (current rank and the next).
 

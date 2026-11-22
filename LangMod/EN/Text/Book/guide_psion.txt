@@ -34,6 +34,45 @@ Psi-Teleport: pick any open spot on this map. Blocked or occupied, you land at r
 
 {p}
 
+<b>Hurl</b>
+
+Psi-Hurl flings anything you can see, yourself included. Right-click the target, then right-click where it should fly: it travels in a line from its own tile, like a bolt cast from there. Left or middle click cancels at no cost.
+
+{PSION_HURL_FLIGHT} It shares Telekinesis's level and grants Telekinesis experience on use. {PSION_HURL_COST}
+
+{p}
+
+<b>Hurl: caveats</b>
+
+Collision damage is the dice roll x (50% + 25% per tile flown). The dice undersell it:
+
+* 4 tiles: 150%
+* 8 tiles: 250%
+* 20 tiles: 550%
+
+Distant, heavy and higher-level targets resist more often.
+
+{PSION_HURL_DANGER}
+
+{p}
+
+<b>Telekinetic Control</b>
+
+* Rank 1 (Psicraft 5): your self-hurl collisions hurt half as much; when others hurl you, 10% less.
+{PSION_TKC_RANK2}
+
+{PSION_TKC_ALLIES}
+
+{p}
+
+<b>Strike</b>
+
+Psi-Strike carries your ordinary melee attack to a target up to 8 tiles away in line of sight (no farther than you can see; dark places shorten it), like a blade thrown and called back. Your weapons or martial arts work exactly as in a normal attack, with the same damage and skill experience. Psicraft and the ability's level add nothing. {PSION_STRIKE_COST}
+
+Weapon traits work as if you stood on the square just before the target: a weapon that hits adjacent enemies sweeps the foes around the target, and consecutive hits land as usual.
+
+{p}
+
 <b>The dead remember</b>
 
 Never reach into the mind of the dead. Whatever harm your mind would deal them lashes back into you.
@@ -86,5 +125,14 @@ The strategy view on your character sheet has a Psion settings button.
 * Powers: switch any power off if you find it too strong. It becomes an ordinary spell again, needing spell stock, and keeps its level. Switching it back on makes it innate again and clears its spell stock. You can also change the Psicraft level that unlocks each power; this book lists them in that order.
 
 * AutoCombat bonuses: on top of whichever strategy you choose, each power's bonus (Telekinesis +20 by default) raises how often auto-combat picks it. Can be switched off.
+
+{p}
+
+<b>Settings: Hurl and Strike</b>
+
+* Psi-Hurl cost: a multiplier of the current or natural Telekinesis cost, or a fixed cost. Full flight distance can be switched on.
+* AutoCombat throws loose objects or enemies into enemies, never through allies, neutrals or you; otherwise it hurls an enemy randomly, away or toward you. Enemies beside you are left to cheaper Telekinesis. Throwing allies is optional.
+* Each power has an AutoCombat checkbox. Psi-Strike's cost is adjustable.
+* Sound: the Telekinesis sound can be muted, or swapped per power for another sound.
 
 Back up your save before changing powers.

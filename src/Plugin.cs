@@ -4,7 +4,7 @@ using HarmonyLib;
 
 namespace PsionClass
 {
-    [BepInPlugin(Id, "Psion", "0.1.3")]
+    [BepInPlugin(Id, "Psion", "0.2.0")]
     public sealed class Plugin : BaseUnityPlugin
     {
         public const string Id = "gharkz.elin.psion";

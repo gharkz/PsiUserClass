@@ -14,9 +14,12 @@ Adds a PSI user class, the Psion: a mystic who draws power from the mind, not ma
 
 **What you get**
 
-- Psicraft skill: powers awaken as it grows (Telekinesis, Mind and Impact spells, Psi-Shield, Psi-Teleport).
+- Psicraft skill: powers awaken as it grows (Telekinesis, Psi-Hurl, Psi-Strike, Mind and Impact spells, Psi-Shield, Psi-Teleport).
 - Powers are innate: mana only, no spell stock.
 - Stronger, cheaper Telekinesis, with smarter AutoCombat use.
+- Psi-Hurl: fling any object or creature you can see, yourself included, along a line you aim. AutoCombat throws things (even enemies) into enemies.
+- Psi-Strike: your normal melee attack on a distant target, like a thrown blade called back.
+- Telekinetic Control feat: steady your own landings, and your allies'.
 - Impact powers are physical: armor (PV) and PDR apply, not EDR.
 - Psionic Edge trait: small bonus to harvesting and crafting.
 - Catch: Mind damage you deal to the undead lashes back. The Necropathy feat fixes that.
@@ -24,7 +27,8 @@ Adds a PSI user class, the Psion: a mystic who draws power from the mind, not ma
 **Settings**
 
 - Switch any power off, or change the Psicraft level that unlocks it.
-- Telekinesis cost, collision dice and AutoCombat rules.
+- Telekinesis and Psi-Hurl cost, collision dice and AutoCombat rules.
+- Telekinesis sound: mute it, or swap it per power.
 - AutoCombat bonus per power, on top of any strategy.
 - Class name: call it whatever you like.
 
@@ -32,7 +36,7 @@ Too strong for your taste? Tune it down in the settings. Balance it your way.
 
 Inspired by ADOM's Mindcrafter. English, Japanese and Simplified Chinese. Japanese and Simplified Chinese translations: Claude (AI).
 
-Disclosure: I used Claude (AI) as a coding and translation assistant while building this mod. The Workshop preview image and the Psi-Shield and Psi-Teleport icons were also made with Claude's help. The design, testing and final decisions are my own.
+Disclosure: I used Claude (AI) as a coding and translation assistant while building this mod. The Workshop preview image and the custom ability icons were also made with Claude's help. The design, testing and final decisions are my own.
 
 ![The Psion's Primer](screenshots/primer.jpg)
 

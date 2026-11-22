@@ -28,6 +28,7 @@ namespace PsionClass
                     c.elements.Remove(absorbed.id);
                 }
                 if (e is Spell) e.vPotential = 0; // innate now: drop leftover stock
+                if (id == PsionData.PsiHurl) PsiHurlShared.Sync(c.elements); // shares Telekinesis's level
                 if (c.IsPC) c.Say("learnSkill", c, e.Name);
             }
             PsiEdge.Refresh(c);
@@ -74,6 +75,17 @@ namespace PsionClass
             if (v == DefaultBonus(id)) d.Remove(id); else d[id] = v;
             c.SetStr(KeyBonus, d.Count == 0 ? null : string.Join(",", d.Select(kv => kv.Key + ":" + kv.Value)));
         }
+        // Powers AutoCombat never picks (player only).
+        const string KeyAutoOff = "psion_auto_off";
+        static HashSet<int> AutoOff(Chara c) =>
+            new HashSet<int>((c?.GetStr(KeyAutoOff) ?? "").Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(int.Parse));
+        internal static bool AutoOn(Chara c, int id) => !AutoOff(c).Contains(id);
+        internal static void ToggleAuto(Chara c, int id)
+        {
+            var d = AutoOff(c);
+            if (!d.Remove(id)) d.Add(id);
+            c.SetStr(KeyAutoOff, d.Count == 0 ? null : string.Join(",", d));
+        }
         internal static int DefaultLevel(int id) => PsionData.Unlocks.First(u => u.id == id).lv;
         internal static int Level(Chara c, int id) => Levels(c).TryGetValue(id, out int lv) ? lv : DefaultLevel(id);
         internal static void SetLevel(Chara c, int id, int lv)
@@ -102,7 +114,7 @@ namespace PsionClass
     {
         static void Postfix()
         {
-            try { var at = EClass.game?.config?.autoCombat; if (at != null && at.idType == PsionData.JobId) { at.idType = "wizard"; EClass.pc._tactics = null; } }
+            try { var at = EClass.game?.config?.autoCombat; if (at != null && at.idType == PsionData.JobId) { at.idType = "wizard"; EClass.pc._tactics = null; } PsionData.RefreshLiveTexts(); }
             catch (Exception e) { Plugin.Report(e); }
         }
     }

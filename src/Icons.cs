@@ -12,6 +12,8 @@ namespace PsionClass
         {
             Add(PsionData.PsiShield, Path.Combine(dir, "assets", "psishield.png"));
             Add(PsionData.PsiTeleport, Path.Combine(dir, "assets", "psiteleport.png"));
+            Add(PsionData.PsiHurl, Path.Combine(dir, "assets", "psihurl.png"));
+            Add(PsionData.PsiStrike, Path.Combine(dir, "assets", "psistrike.png"));
         }
         static void Add(int id, string path)
         {
