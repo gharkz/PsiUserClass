@@ -42,6 +42,10 @@ Disclosure: I used Claude (AI) as a coding and translation assistant while build
 
 ![Psion settings](screenshots/settings.jpg)
 
+![Psi-Hurl settings](screenshots/settings-hurl.jpg)
+
+![AutoCombat settings](screenshots/settings-autocombat.jpg)
+
 ![Powers table](screenshots/settings-powers.jpg)
 
 ---
