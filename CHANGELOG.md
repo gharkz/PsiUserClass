@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.1
+Psion settings: a note explaining the powers table's AutoCombat column (unchecked means AutoCombat never uses that power).
+
 ## 0.2.0
 - Psi-Hurl (Psicraft 5): hurl any object or creature you can see, yourself included, along a line you aim from the target's tile, like a bolt cast from there. It flies 4 tiles, +1 per 3 Telekinesis levels (max 20), or always 20 with a Psion settings option. Its description spells out the distance multiplier on collision damage. It shares Telekinesis's level and XP and has its own icon. Costs 1.5x Telekinesis. Distance, weight and higher-level creatures make it harder.
 - AutoCombat aims Psi-Hurl itself: loose objects or hostile creatures are thrown into enemies (yes, enemies into each other), never through allies, neutrals or you.
