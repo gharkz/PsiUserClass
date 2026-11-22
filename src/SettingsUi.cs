@@ -122,6 +122,8 @@ namespace PsionClass
                 Click = r => { PsionCombat.SetBonusOn(pc, !PsionCombat.BonusOn(pc)); r.Checked = PsionCombat.BonusOn(pc); if (r.Mark) r.Mark.gameObject.SetActive(r.Checked.Value); } });
             rows.Add(new Row { Note = true, Info = true, Label = UiText.Pick("Checked = innate (no spell stock). Click a number to change it.",
                 "チェック=生得(ストック不要)。数値をクリックで変更。", "勾选=天生(无需储备)。点击数值可修改。") });
+            rows.Add(new Row { Note = true, Info = true, Label = UiText.Pick("AutoCombat column: unchecked means AutoCombat never uses that power.",
+                "自動戦闘の列: チェックを外すと自動戦闘はその能力を使わない。", "自动战斗列: 取消勾选后自动战斗不会使用该能力。") });
             rows.Add(new Row { Note = true, Info = true, Label = UiText.Pick("AutoCombat bonus: the higher it is, the more often AutoCombat picks that power when it's available.",
                 "自動戦闘ボーナス: 高いほど、使用可能な時に自動戦闘がその能力を選びやすくなる。",
                 "自动战斗加成: 数值越高,自动战斗在可用时越常选择该能力。") });
