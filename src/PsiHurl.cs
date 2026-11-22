@@ -202,6 +202,7 @@ public class ActPsiHurl : Spell
         var enemies = EClass._map.charas.Where(c => c != cc && c.IsAliveInCurrentZone && c.IsHostile(cc) && cc.Dist(c) <= Range + flight && cc.CanSee(c)).ToList();
         if (enemies.Count == 0) return null;
         if (cc.mana.value < act.GetCost(cc).cost) return null;
+        if (cc.IsPC && PsionCombat.PullRanged(cc) && !PsionCombat.TkCanPull(cc) && PullPlan(cc, act, enemies, primary, flight) is Plan pull) return pull;
         var mode = cc.IsPC ? PsionCombat.HurlDir(cc) : PsionCombat.HurlDirection.Random;
         var dirPlan = DirectionPlan(cc, act, enemies, primary, mode, flight);
         if (mode != PsionCombat.HurlDirection.Random && PsionCombat.HurlDirFirst(cc) && dirPlan != null) return dirPlan;
@@ -236,7 +237,7 @@ public class ActPsiHurl : Spell
         Plan best = null;
         foreach (var a in ammo)
         {
-            if (act.Difficulty(cc, a) >= 2) continue;               // 66%+ fail: not worth it
+            if (act.Difficulty(cc, a) >= 2 || HoldClose(cc, a)) continue; // 66%+ fail: not worth it; or kept close
             foreach (var e in enemies)
             {
                 if (e == a || a.Dist(e) > flight) continue;
@@ -253,19 +254,15 @@ public class ActPsiHurl : Spell
     // Hurl an enemy (the combat target first, else the nearest) away from you, toward you, or in a random direction.
     static Plan DirectionPlan(Chara cc, ActPsiHurl act, List<Chara> enemies, Card primary, PsionCombat.HurlDirection mode, int flight)
     {
-        var order = enemies.Where(e => cc.Dist(e) <= Range && Hurlable(cc, e) && act.Difficulty(cc, e) < 2 && !LeaveToTk(cc, e)).OrderBy(e => cc.Dist(e)).ToList();
+        var order = enemies.Where(e => cc.Dist(e) <= Range && Hurlable(cc, e) && act.Difficulty(cc, e) < 2 && !LeaveToTk(cc, e)
+            && (mode == PsionCombat.HurlDirection.Toward || !HoldClose(cc, e))).OrderBy(e => cc.Dist(e)).ToList();
         if (primary is Chara pt && order.Remove(pt)) order.Insert(0, pt);
         foreach (var e in order)
         {
             var aims = new List<(Point aim, int max)>();
             int dx = e.pos.x - cc.pos.x, dz = e.pos.z - cc.pos.z;
             if (mode == PsionCombat.HurlDirection.Away && (dx != 0 || dz != 0)) aims.Add((new Point(e.pos.x + dx, e.pos.z + dz), flight));
-            else if (mode == PsionCombat.HurlDirection.Toward)
-            {
-                var toCc = Path(e, cc.pos, flight);
-                int stop = toCc.FindIndex(q => q.Equals(cc.pos));
-                if (stop > 0) aims.Add((cc.pos.Copy(), stop));      // lands beside you
-            }
+            else if (mode == PsionCombat.HurlDirection.Toward && TowardAim(cc, e, flight) is int stop) aims.Add((cc.pos.Copy(), stop)); // lands beside you
             else if (mode == PsionCombat.HurlDirection.Random)
                 foreach (var d in Dirs.OrderBy(_ => EClass.rnd(100))) aims.Add((new Point(e.pos.x + d.x, e.pos.z + d.z), flight));
             foreach (var (aim, max) in aims)
@@ -277,6 +274,31 @@ public class ActPsiHurl : Spell
         }
         return null;
     }
+
+    // Flight that stops beside the caster, or null when the caster isn't on the line.
+    static int? TowardAim(Chara cc, Card e, int flight)
+    {
+        int stop = Path(e, cc.pos, flight).FindIndex(q => q.Equals(cc.pos));
+        return stop > 0 ? stop : (int?)null;
+    }
+
+    // Pull a ranged / keep-away enemy (3+ tiles off) in beside you: the combat target first, else the farthest.
+    static Plan PullPlan(Chara cc, ActPsiHurl act, List<Chara> enemies, Card primary, int flight)
+    {
+        var order = enemies.Where(e => cc.Dist(e) >= 3 && cc.Dist(e) <= Range && PsionCombat.KeepsAway(e) && Hurlable(cc, e) && act.Difficulty(cc, e) < 2)
+            .OrderByDescending(e => cc.Dist(e)).ToList();
+        if (primary is Chara pt && order.Remove(pt)) order.Insert(0, pt);
+        foreach (var e in order)
+        {
+            if (!(TowardAim(cc, e, flight) is int stop)) continue;
+            var path = Path(e, cc.pos, stop);
+            if (path.Count == 0 || !Clean(cc, e, path, out _)) continue;
+            return new Plan { target = e, aim = cc.pos.Copy(), max = stop };
+        }
+        return null;
+    }
+
+    static bool HoldClose(Chara cc, Card a) => PsionCombat.HoldClose(cc, a);
 
     // An enemy right beside a Psion who has Telekinesis: a plain Telekinesis hurl does the job for less mana.
     static bool LeaveToTk(Chara cc, Card a) =>

@@ -139,6 +139,18 @@ namespace PsionClass
         const string KeyStrikeCost = "psion_strike_cost"; // Psi-Strike fixed mana cost, default 12
         internal static int StrikeCost(Chara c) => int.TryParse(c.GetStr(KeyStrikeCost), out int v) && v >= 0 ? v : 12;
         internal static void SetStrikeCost(Chara c, int v) => c.SetStr(KeyStrikeCost, v == 12 ? null : v.ToString());
+        // Ranged / keep-away enemies (archers, casters, performers that hang back): AutoCombat pulls them in (default on),
+        // and optionally never hurls them away again (default off).
+        const string KeyPullRangedOff = "psion_pull_ranged_off", KeyKeepClose = "psion_keep_close";
+        internal static bool PullRanged(Chara c) => string.IsNullOrEmpty(c.GetStr(KeyPullRangedOff));
+        internal static void SetPullRanged(Chara c, bool on) => c.SetStr(KeyPullRangedOff, on ? null : "1");
+        internal static bool KeepClose(Chara c) => !string.IsNullOrEmpty(c.GetStr(KeyKeepClose));
+        internal static void SetKeepClose(Chara c, bool on) => c.SetStr(KeyKeepClose, on ? "1" : null);
+        internal static bool KeepsAway(Chara ch) => ch.ranged != null || ch.tactics.DestDist >= 2;
+        // Telekinesis does the ranged pull (cheaper, lands beside you) whenever it's usable; Psi-Hurl only covers when it isn't.
+        internal static bool TkPullsRanged(Chara cc, Card t) => cc.IsPC && PullRanged(cc) && Tk != TkMode.Off && t is Chara ch && ch.IsHostile(cc) && KeepsAway(ch);
+        internal static bool TkCanPull(Chara cc) => cc.IsPC && PullRanged(cc) && Tk != TkMode.Off && cc.ability.Has(PsionData.Telekinesis);
+        internal static bool HoldClose(Chara cc, Card t) => cc.IsPC && PullRanged(cc) && KeepClose(cc) && t is Chara ch && ch.IsHostile(cc) && KeepsAway(ch);
         const string KeyPreferTkOff = "psion_hurl_prefer_tk_off"; // AutoCombat leaves adjacent enemies to Telekinesis (default on)
         internal static bool PreferTk(Chara c) => string.IsNullOrEmpty(c.GetStr(KeyPreferTkOff));
         internal static void SetPreferTk(Chara c, bool on) => c.SetStr(KeyPreferTkOff, on ? null : "1");
@@ -236,14 +248,16 @@ namespace PsionClass
             if (cc == null || !cc.IsPC || !PsionData.IsPsion(cc) || !(cc.ai is GoalCombat) || tc == null) return;
             bool adjacent = tc.Dist(cc) == 1;
             var mode = PsionCombat.Tk;
-            if (mode == PsionCombat.TkMode.Off || (mode == PsionCombat.TkMode.PullOnly && adjacent) || (mode == PsionCombat.TkMode.PushOnly && !adjacent))
+            bool rangedPull = !adjacent && PsionCombat.TkPullsRanged(cc, tc);
+            if (adjacent && PsionCombat.HoldClose(cc, tc)) { __result = false; return; } // keep ranged enemies close
+            if (mode == PsionCombat.TkMode.Off || (mode == PsionCombat.TkMode.PullOnly && adjacent) || (mode == PsionCombat.TkMode.PushOnly && !adjacent && !rangedPull))
             { __result = false; return; }
             // ListPath is mode-correct: a pull lists the squares between target and caster (never past the target);
             // a hurl lists the squares beyond the target. Check only the path this cast will travel.
             var path = __instance.ListPath(cc.pos, tc.pos);
             // Damage-only: hurls always deal collision damage; a pull deals none, so it is allowed only as a
             // Pull-and-hurl setup whose landing square leaves room for the follow-up hurl.
-            if (PsionCombat.DamageOnly(cc) && !adjacent &&
+            if (PsionCombat.DamageOnly(cc) && !adjacent && !rangedPull &&
                 !(mode == PsionCombat.TkMode.Both && PsionCombat.Combo(cc) && PsionCombat.PullSetsUpHurl(__instance, cc, path)))
             { __result = false; return; }
             foreach (var p in path)

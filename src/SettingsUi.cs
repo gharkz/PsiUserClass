@@ -108,6 +108,11 @@ namespace PsionClass
                 new Row { Group = 2, NeedsAuto = true, Indent = true, Label = UiText.Pick("Allow a pull that sets up a hurl", "放り飛ばしにつながる引き寄せは許可", "允许为抛飞铺垫的拉近"), Checked = PsionCombat.Combo(pc),
                     Disabled = () => PsionCombat.Tk != PsionCombat.TkMode.Both || !PsionCombat.DamageOnly(pc),
                     Click = r => { PsionCombat.SetCombo(pc, !PsionCombat.Combo(pc)); r.Checked = PsionCombat.Combo(pc); if (r.Mark) r.Mark.gameObject.SetActive(r.Checked.Value); } },
+                new Row { Group = 2, NeedsAuto = true, Label = UiText.Pick("Pull ranged foes into melee (overrides the settings above and Psi-Hurl)", "遠距離の敵を近接へ引き寄せる(上の設定とサイハールより優先)", "将远程敌人拉入近战(优先于上方设置与灵能投掷)"), Checked = PsionCombat.PullRanged(pc),
+                    Click = r => { PsionCombat.SetPullRanged(pc, !PsionCombat.PullRanged(pc)); r.Checked = PsionCombat.PullRanged(pc); if (r.Mark) r.Mark.gameObject.SetActive(r.Checked.Value); } },
+                new Row { Group = 2, NeedsAuto = true, Indent = true, Label = UiText.Pick("Keep them close: never hurl them away (Telekinesis or Psi-Hurl)", "近くに留める: 投げ飛ばさない(テレキネシスもサイハールも)", "留在身边: 不再抛开(念动术与灵能投掷)"), Checked = PsionCombat.KeepClose(pc),
+                    Disabled = () => !PsionCombat.PullRanged(pc),
+                    Click = r => { PsionCombat.SetKeepClose(pc, !PsionCombat.KeepClose(pc)); r.Checked = PsionCombat.KeepClose(pc); if (r.Mark) r.Mark.gameObject.SetActive(r.Checked.Value); } },
                 new Row { Group = 2, NeedsAuto = true, Label = UiText.Pick("Don't use if its path holds:", "経路に次がいれば使わない:", "路径上有以下对象时不使用:") },
             });
             var kinds = (PsionCombat.Bystander[])Enum.GetValues(typeof(PsionCombat.Bystander));

@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.2
+Auto-combat Telekinesis: pull ranged enemies into melee (default on). Anything with a ranged weapon or that keeps its distance (archers, casters, performers) is pulled in beside you, overriding the Telekinesis settings above it and Psi-Hurl (Psi-Hurl pulls instead only when Telekinesis is set to Don't use). Optional "keep them close": once beside you, neither power hurls them away.
+
 ## 0.2.1
 Psion settings: a note explaining the powers table's AutoCombat column (unchecked means AutoCombat never uses that power).
 
