@@ -150,6 +150,8 @@ namespace PsionClass
         // Telekinesis does the ranged pull (cheaper, lands beside you) whenever it's usable; Psi-Hurl only covers when it isn't.
         internal static bool TkPullsRanged(Chara cc, Card t) => cc.IsPC && PullRanged(cc) && Tk != TkMode.Off && t is Chara ch && ch.IsHostile(cc) && KeepsAway(ch);
         internal static bool TkCanPull(Chara cc) => cc.IsPC && PullRanged(cc) && Tk != TkMode.Off && cc.ability.Has(PsionData.Telekinesis);
+        // A ranged foe still at range while pulling is on: only Telekinesis' pull (or Psi-Hurl toward you) may move it.
+        internal static bool PullingAt(Chara cc, Card t) => cc.IsPC && PullRanged(cc) && t is Chara ch && ch.IsHostile(cc) && KeepsAway(ch) && cc.Dist(ch) >= 2;
         internal static bool HoldClose(Chara cc, Card t) => cc.IsPC && PullRanged(cc) && KeepClose(cc) && t is Chara ch && ch.IsHostile(cc) && KeepsAway(ch);
         const string KeyPreferTkOff = "psion_hurl_prefer_tk_off"; // AutoCombat leaves adjacent enemies to Telekinesis (default on)
         internal static bool PreferTk(Chara c) => string.IsNullOrEmpty(c.GetStr(KeyPreferTkOff));
@@ -241,11 +243,31 @@ namespace PsionClass
     [HarmonyPatch(typeof(ActTelekinesis), nameof(ActTelekinesis.CanPerform))]
     static class TelekinesisAutoMode
     {
+        static bool retargeting;
+        internal static Card Aim; // the ranged foe being checked as Telekinesis' target (read by PracticeTkTarget)
+
         static void Postfix(ActTelekinesis __instance, ref bool __result)
         {
-            if (!__result) return;
             var cc = Act.CC; var tc = Act.TC;
             if (cc == null || !cc.IsPC || !PsionData.IsPsion(cc) || !(cc.ai is GoalCombat) || tc == null) return;
+            // Auto-combat only aims Telekinesis at its combat target (usually the foe in your face). With pulling on, aim
+            // it at a ranged foe instead: the combat target if it is one, else the farthest one Telekinesis can reach.
+            // Act.Perform re-runs CanPerform and keeps the target set here.
+            if (!retargeting && PsionCombat.TkCanPull(cc) && !PsionCombat.PullingAt(cc, tc))
+            {
+                var foes = EClass._map.charas.Where(c => c != tc && c.IsAliveInCurrentZone && PsionCombat.PullingAt(cc, c) && cc.CanSee(c))
+                    .OrderByDescending(c => cc.Dist(c)).ToList();
+                foreach (var foe in foes)
+                {
+                    bool ok;
+                    retargeting = true;
+                    try { Aim = foe; Act.TC = foe; Act.TP.Set(foe.pos); ok = __instance.CanPerform(); }
+                    finally { retargeting = false; Aim = null; }
+                    if (ok) { __result = true; return; }
+                }
+                Act.TC = tc; Act.TP.Set(tc.pos);
+            }
+            if (!__result) return;
             bool adjacent = tc.Dist(cc) == 1;
             var mode = PsionCombat.Tk;
             bool rangedPull = !adjacent && PsionCombat.TkPullsRanged(cc, tc);

@@ -55,7 +55,8 @@ namespace PsionClass
         {
             // Vanilla TK reads the mouse target for the PC. In practice use the dummy; in auto-combat use the AI's
             // current enemy (otherwise TK almost always fails CanPerform and auto-combat falls back to melee).
-            Card tc = Act.CC?.ai is AI_PsiPractice ai ? ai.target : (Act.CC != null && Act.CC.IsPC && Act.CC.ai is GoalCombat gc ? gc.tc : null);
+            // A pull retarget (TelekinesisAutoMode) wins over the combat target while it checks a ranged foe.
+            Card tc = TelekinesisAutoMode.Aim ?? (Act.CC?.ai is AI_PsiPractice ai ? ai.target : (Act.CC != null && Act.CC.IsPC && Act.CC.ai is GoalCombat gc ? gc.tc : null));
             if (tc == null) return;
             Act.TC = tc;
             __result = !tc.pos.Equals(Act.CC.pos) && tc.trait.CanBeHeld && tc.trait.CanBeTeleported && !tc.IsMultisize

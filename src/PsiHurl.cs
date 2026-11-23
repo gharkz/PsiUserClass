@@ -237,7 +237,7 @@ public class ActPsiHurl : Spell
         Plan best = null;
         foreach (var a in ammo)
         {
-            if (act.Difficulty(cc, a) >= 2 || HoldClose(cc, a)) continue; // 66%+ fail: not worth it; or kept close
+            if (act.Difficulty(cc, a) >= 2 || HoldClose(cc, a) || PsionCombat.PullingAt(cc, a)) continue; // 66%+ fail; kept close; or to be pulled in
             foreach (var e in enemies)
             {
                 if (e == a || a.Dist(e) > flight) continue;
@@ -255,7 +255,7 @@ public class ActPsiHurl : Spell
     static Plan DirectionPlan(Chara cc, ActPsiHurl act, List<Chara> enemies, Card primary, PsionCombat.HurlDirection mode, int flight)
     {
         var order = enemies.Where(e => cc.Dist(e) <= Range && Hurlable(cc, e) && act.Difficulty(cc, e) < 2 && !LeaveToTk(cc, e)
-            && (mode == PsionCombat.HurlDirection.Toward || !HoldClose(cc, e))).OrderBy(e => cc.Dist(e)).ToList();
+            && (mode == PsionCombat.HurlDirection.Toward || (!HoldClose(cc, e) && !PsionCombat.PullingAt(cc, e)))).OrderBy(e => cc.Dist(e)).ToList();
         if (primary is Chara pt && order.Remove(pt)) order.Insert(0, pt);
         foreach (var e in order)
         {

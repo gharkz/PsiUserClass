@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.3
+Fix: "Pull ranged foes into melee" now actually pulls them. AutoCombat used to aim Telekinesis only at its current target (usually the enemy beside you), so ranged foes were rarely pulled, and Psi-Hurl then threw them away instead. Telekinesis now aims at a visible ranged foe (your target if it is one, else the farthest it can reach), and while the option is on Psi-Hurl no longer throws ranged foes that are still at range, except toward you.
+
 ## 0.2.2
 Auto-combat Telekinesis: pull ranged enemies into melee (default on). Anything with a ranged weapon or that keeps its distance (archers, casters, performers) is pulled in beside you, overriding the Telekinesis settings above it and Psi-Hurl (Psi-Hurl pulls instead only when Telekinesis is set to Don't use). Optional "keep them close": once beside you, neither power hurls them away.
 
