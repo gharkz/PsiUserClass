@@ -454,3 +454,33 @@ namespace PsionClass
         }
     }
 }
+
+namespace PsionClass
+{
+    // "You cast Telekinesis (pull)." / "(hurl)." Vanilla names the cast the same either way; the target's distance at
+    // the moment the line is said decides (beside you = hurl, farther = pull; Act.TC is final by then, retargets too).
+    [HarmonyLib.HarmonyPatch(typeof(Chara), nameof(Chara.UseAbility), new[] { typeof(Act), typeof(Card), typeof(Point), typeof(bool) })]
+    static class TkCastWording
+    {
+        internal static Chara Caster;
+        static void Prefix(Chara __instance, Act a) { if (a is ActTelekinesis) Caster = __instance; }
+        static Exception Finalizer(Exception __exception) { Caster = null; return __exception; }
+    }
+
+    [HarmonyLib.HarmonyPatch(typeof(Card), nameof(Card.Say), new[] { typeof(string), typeof(Card), typeof(string), typeof(string) })]
+    static class TkCastWordingSay
+    {
+        static void Prefix(Card c1, ref string ref1)
+        {
+            try
+            {
+                var cc = TkCastWording.Caster;
+                if (cc == null || c1 != cc || string.IsNullOrEmpty(ref1) || Act.TC == null || Act.TC == cc) return;
+                bool hurl = Act.TC.Dist(cc) <= 1;
+                ref1 += hurl ? UiText.Pick(" (hurl)", "(投げ)", "(抛掷)") : UiText.Pick(" (pull)", "(引き寄せ)", "(拉近)");
+                TkCastWording.Caster = null; // once per cast
+            }
+            catch (Exception e) { Plugin.Report(e); }
+        }
+    }
+}
