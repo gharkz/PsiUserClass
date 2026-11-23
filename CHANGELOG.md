@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.4
+Psi-Hurl's ability card is now bullet points like Telekinesis's, with its flight distance as one of them; the long paragraph is gone (the damage formula, cost options and resistance are in the Psion primer). Fixed a bullet that split in two at a comma.
+
 ## 0.2.3
 Fix: "Pull ranged foes into melee" now actually pulls them. AutoCombat used to aim Telekinesis only at its current target (usually the enemy beside you), so ranged foes were rarely pulled, and Psi-Hurl then threw them away instead. Telekinesis now aims at a visible ranged foe (your target if it is one, else the farthest it can reach), and while the option is on Psi-Hurl no longer throws ranged foes that are still at range, except toward you.
 

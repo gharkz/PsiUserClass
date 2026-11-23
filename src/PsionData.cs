@@ -195,17 +195,19 @@ namespace PsionClass
             return r;
         }
 
+        // Psi-Hurl's bullet lines (the game splits them on ASCII commas, so none inside a line), with the flight line.
+        static (string en, string jp, string cn) HurlExtra(string flyEn, string flyJp, string flyCn) => (
+            "Can be used on creatures and items on the ground or yourself,Higher power allows heavier objects to be moved,Hurls the target along a line you aim from its tile," + flyEn + ",The target pushes aside any creatures along its path,Invoke a #calc #ele collision,Collision damage increases with target weight and distance",
+            "生物、地面のアイテム、自分を対象にできる,パワーが上がるほどより重い対象を動かせる,対象の位置から狙った方向へ放り飛ばす," + flyJp + ",対象は移動経路にいる生物を押しのける,#calcの#eleの衝突,衝突ダメージは対象の重量と移動距離に比例する",
+            "可对生物、地面物品及自己使用,威力越高可移动越重的目标,将目标从其所在位置沿瞄准方向抛出," + flyCn + ",目标会推开路径上的生物,造成#calc的#ele碰撞,碰撞伤害随目标重量和移动距离增加");
+
         static SourceElement.Row MakePsiHurl(SourceElement E)
         {
             var r = Clone(E.alias["SpTelekinesis"]);
             r.id = PsiHurl; r.alias = "SpPsiHurl";
             SetText(r, "name", "Psi-Hurl", "サイハール", "灵能投掷");
-            SetText(r, "detail", "Hurl any object or creature you can see, yourself included, in a direction you choose. Shares Telekinesis's level. Flies 4 tiles, +1 per 3 Telekinesis levels (up to 20; settings can make it always 20). Collision damage is the dice roll x (50% + 25% per tile flown), so long flights hit far harder than the dice suggest. Costs 1.5x Telekinesis. Heavy or distant targets resist more.",
-                "見えている物や生き物(自分も可)を好きな方向へ放り飛ばす。レベルはテレキネシスと共通。飛距離は4マス、テレキネシス3レベルごとに+1(最大20、設定で常に20も可)。衝突ダメージはダイス×(50%+飛んだマスごとに25%)なので、長く飛ぶほどダイス以上に強い。消費はテレキネシスの1.5倍。重い・遠い対象ほど抵抗する。",
-                "将视野内的任何物体或生物(包括自己)朝你选择的方向抛出。等级与念动术共享。飞行4格,念动术每3级+1(最多20,可在设置中改为始终20)。碰撞伤害为骰值×(50%+每飞行一格25%),飞得越远伤害远超骰值。消耗为念动术的1.5倍。沉重或远处的目标更难抛动。");
-            SetText(r, "textExtra", "Can be used on creatures, items on the ground and yourself,Higher power allows heavier objects to be moved,Hurls the target along a line you aim from its tile,The target pushes aside any creatures along its path,Invoke a #calc #ele collision,Collision damage increases with target weight and distance",
-                "生物、地面のアイテム、自分を対象にできる,パワーが上がるほどより重い対象を動かせる,対象の位置から狙った方向へ放り飛ばす,対象は移動経路にいる生物を押しのける,#calcの#eleの衝突,衝突ダメージは対象の重量と移動距離に比例する",
-                "可对生物、地面物品及自己使用,威力越高可移动越重的目标,将目标从其所在位置沿瞄准方向抛出,目标会推开路径上的生物,造成#calc的#ele碰撞,碰撞伤害随目标重量和移动距离增加");
+            SetText(r, "detail", "", "", ""); // like Telekinesis: bullets only; the details live in the primer
+            SetText(r, "textExtra", HurlExtra("Flies 4 tiles (+1 per 3 levels up to 20)", "飛距離4マス(3レベルごとに+1、最大20)", "飞行4格(每3级+1，最多20)").en, HurlExtra("", "飛距離4マス(3レベルごとに+1、最大20)", "").jp, HurlExtra("", "", "飞行4格(每3级+1，最多20)").cn);
             r.type = "ActPsiHurl";
             r.aliasParent = "CHA";
             r.geneSlot = -1;
@@ -324,21 +326,12 @@ namespace PsionClass
                     "自我投掷碰撞-50%,被他人投掷-10%" + extraCn + "\n" +
                     "自我投掷碰撞-100%" + heavyCn + ",被他人投掷-20%" + extraCn);
 
-                // Psi-Hurl: flight and cost.
+                // Psi-Hurl: the flight line follows the full-flight setting (cost shows on the card itself).
                 bool full = pc != null && PsionCombat.HurlFull(pc);
-                var mode = pc != null ? PsionCombat.HurlCostMode(pc) : PsionCombat.HurlCost.CurrentTk;
-                float hm = pc != null ? PsionCombat.HurlMult(pc) : 1.5f;
-                int hf = pc != null ? PsionCombat.HurlFixed(pc) : 5;
-                string fEn = full ? "Always flies the full 20 tiles." : "Flies 4 tiles, +1 per 3 Telekinesis levels (up to 20).";
-                string fJp = full ? "常に最大の20マス飛ぶ。" : "飛距離は4マス、テレキネシス3レベルごとに+1(最大20)。";
-                string fCn = full ? "始终飞行完整的20格。" : "飞行4格,念动术每3级+1(最多20)。";
-                string cEn = mode == PsionCombat.HurlCost.Fixed ? "Costs a fixed " + hf + " mana." : hm <= 0 ? "Costs no mana." : mode == PsionCombat.HurlCost.NaturalTk ? "Costs " + X(hm) + " Telekinesis's natural mana cost." : "Costs " + X(hm) + " Telekinesis's mana.";
-                string cJp = mode == PsionCombat.HurlCost.Fixed ? "消費は固定" + hf + "マナ。" : hm <= 0 ? "マナを消費しない。" : mode == PsionCombat.HurlCost.NaturalTk ? "消費はテレキネシス本来の消費の" + X(hm) + "。" : "消費はテレキネシスの" + X(hm) + "。";
-                string cCn = mode == PsionCombat.HurlCost.Fixed ? "固定消耗" + hf + "点魔力。" : hm <= 0 ? "不消耗魔力。" : mode == PsionCombat.HurlCost.NaturalTk ? "消耗为念动术原始消耗的" + X(hm) + "。" : "消耗为念动术的" + X(hm) + "。";
-                SetText(E.map[PsiHurl], "detail",
-                    "Hurl any object or creature you can see, yourself included, in a direction you choose. Shares Telekinesis's level and grants Telekinesis experience. " + fEn + " Collision damage is the dice roll x (50% + 25% per tile flown), so long flights hit far harder than the dice suggest. " + cEn + " Heavy or distant targets resist more.",
-                    "見えている物や生き物(自分も可)を好きな方向へ放り飛ばす。レベルはテレキネシスと共通で、テレキネシスの経験を得る。" + fJp + "衝突ダメージはダイス×(50%+飛んだマスごとに25%)なので、長く飛ぶほどダイス以上に強い。" + cJp + "重い・遠い対象ほど抵抗する。",
-                    "将视野内的任何物体或生物(包括自己)朝你选择的方向抛出。等级与念动术共享,并获得念动术经验。" + fCn + "碰撞伤害为骰值×(50%+每飞行一格25%),飞得越远伤害远超骰值。" + cCn + "沉重或远处的目标更难抛动。");
+                var hx = HurlExtra(full ? "Always flies the full 20 tiles" : "Flies 4 tiles (+1 per 3 levels up to 20)",
+                    full ? "常に最大の20マス飛ぶ" : "飛距離4マス(3レベルごとに+1、最大20)", full ? "始终飞行完整的20格" : "飞行4格(每3级+1，最多20)");
+                SetText(E.map[PsiHurl], "detail", "", "", "");
+                SetText(E.map[PsiHurl], "textExtra", hx.en, hx.jp, hx.cn);
 
                 // Psi-Strike: cost.
                 int sc = pc != null ? PsionCombat.StrikeCost(pc) : 12;
