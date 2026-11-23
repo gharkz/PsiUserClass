@@ -457,13 +457,14 @@ namespace PsionClass
 
 namespace PsionClass
 {
-    // "You cast Telekinesis (pull)." / "(hurl)." Vanilla names the cast the same either way; the target's distance at
-    // the moment the line is said decides (beside you = hurl, farther = pull; Act.TC is final by then, retargets too).
+    // "You cast telekinesis on a yeek archer (pull)." / "(hurl)." and "You cast psi-hurl on a rock." Vanilla names
+    // neither target nor direction. Act.TC is final when the line is said (retargets included); the target's distance
+    // then decides pull (farther) or hurl (beside you). Your own tile reads "on yourself".
     [HarmonyLib.HarmonyPatch(typeof(Chara), nameof(Chara.UseAbility), new[] { typeof(Act), typeof(Card), typeof(Point), typeof(bool) })]
     static class TkCastWording
     {
-        internal static Chara Caster;
-        static void Prefix(Chara __instance, Act a) { if (a is ActTelekinesis) Caster = __instance; }
+        internal static Chara Caster; internal static bool Tk;
+        static void Prefix(Chara __instance, Act a) { if (a is ActTelekinesis || a is ActPsiHurl) { Caster = __instance; Tk = a is ActTelekinesis; } }
         static Exception Finalizer(Exception __exception) { Caster = null; return __exception; }
     }
 
@@ -474,11 +475,12 @@ namespace PsionClass
         {
             try
             {
-                var cc = TkCastWording.Caster;
-                if (cc == null || c1 != cc || string.IsNullOrEmpty(ref1) || Act.TC == null || Act.TC == cc) return;
-                bool hurl = Act.TC.Dist(cc) <= 1;
-                ref1 += hurl ? UiText.Pick(" (hurl)", "(投げ)", "(抛掷)") : UiText.Pick(" (pull)", "(引き寄せ)", "(拉近)");
+                var cc = TkCastWording.Caster; var tc = Act.TC;
+                if (cc == null || c1 != cc || string.IsNullOrEmpty(ref1) || tc == null) return;
                 TkCastWording.Caster = null; // once per cast
+                if (tc == cc) { if (cc.IsPC) ref1 += UiText.Pick(" on yourself", "を自分に", "于自己"); return; }
+                ref1 += UiText.Pick(" on ", "を", "于") + tc.Name;
+                if (TkCastWording.Tk) ref1 += tc.Dist(cc) <= 1 ? UiText.Pick(" (hurl)", "(投げ)", "(抛掷)") : UiText.Pick(" (pull)", "(引き寄せ)", "(拉近)");
             }
             catch (Exception e) { Plugin.Report(e); }
         }
