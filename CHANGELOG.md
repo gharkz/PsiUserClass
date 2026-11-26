@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.5
+
+PSI User Class 0.2.5
+Added System menu > Mod > Bug reports > PSI User Class: a window that copies a bug report (versions, enabled mods, log) to post at https://github.com/gharkz/elin-mods-support/issues
+
+日本語
+システムメニュー > Mod > Bug reports > PSI User Class を追加。不具合報告(バージョン、有効なMod、ログ)をコピーして https://github.com/gharkz/elin-mods-support/issues に投稿できます。
+
+简体中文
+新增 系统菜单 > Mod > Bug reports > PSI User Class:可复制问题报告(版本、已启用模组、日志)并发布到 https://github.com/gharkz/elin-mods-support/issues 。
+
+
 ## 0.2.4
 Psi-Hurl's ability card is now bullet points like Telekinesis's, with its flight distance as one of them; the long paragraph is gone (the damage formula, cost options and resistance are in the Psion primer). Fixed a bullet that split in two at a comma.
 

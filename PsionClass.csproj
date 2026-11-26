@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework><LangVersion>latest</LangVersion>
-    <Authors>gharkz</Authors><Version>0.2.4</Version>
+    <Authors>gharkz</Authors><Version>0.2.5</Version>
     <AssemblyName>PsionClass</AssemblyName><RootNamespace>PsionClass</RootNamespace>
     <ElinGamePath Condition="'$(ElinGamePath)' == ''">X:/SteamLibrary/steamapps/common/Elin</ElinGamePath>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
@@ -22,6 +22,9 @@
     <Reference Include="$(ElinGamePath)/Elin_Data/Managed/UnityEngine.ImageConversionModule.dll" Private="false" />
     <Reference Include="$(ElinGamePath)/Elin_Data/Managed/UnityEngine.UI.dll" Private="false" />
     <Reference Include="$(ElinGamePath)/Elin_Data/Managed/UnityEngine.InputLegacyModule.dll" Private="false" />
+    <Reference Include="$(ElinGamePath)/Elin_Data/Managed/Plugins.Modding.dll" Private="false" />
+    <Reference Include="$(ElinGamePath)/Elin_Data/Managed/UnityEngine.UIModule.dll" Private="false" />
+    <Reference Include="$(ElinGamePath)/Elin_Data/Managed/UnityEngine.IMGUIModule.dll" Private="false" />
     <Reference Include="$(ElinGamePath)/Elin_Data/Managed/UnityEngine.TextRenderingModule.dll" Private="false" />
     <Reference Include="$(ElinGamePath)/BepInEx/core/BepInEx.Core.dll" Private="false" />
     <Reference Include="$(ElinGamePath)/BepInEx/core/BepInEx.Unity.dll" Private="false" />

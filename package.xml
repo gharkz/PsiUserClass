@@ -39,6 +39,8 @@ Inspired by ADOM's Mindcrafter. English, Japanese and Simplified Chinese. Japane
 Disclosure: I used Claude (AI) as a coding and translation assistant while building this mod. The Workshop preview image and the custom ability icons were also made with Claude's help. The design, testing and final decisions are my own.
 
 Source: https://github.com/gharkz/PsiUserClass
+
+Found a problem? System menu > Mod > Bug reports > PSI User Class: copy the report and post it at https://github.com/gharkz/elin-mods-support/issues
 [/quote]
 
 [quote]
@@ -76,6 +78,8 @@ ADOMのマインドクラフターに着想。英語・日本語・簡体字中�
 開示: このModの制作では、コーディングと翻訳の補助にClaude(AI)を使用しました。ワークショップのプレビュー画像と独自の能力アイコンもClaudeの補助で作成しました。設計・テスト・最終判断は私自身が行いました。
 
 ソースコード: https://github.com/gharkz/PsiUserClass
+
+不具合の報告: システムメニュー > Mod > Bug reports > PSI User Class でレポートをコピーし、https://github.com/gharkz/elin-mods-support/issues に投稿してください。
 [/quote]
 
 [quote]
@@ -113,6 +117,8 @@ ADOMのマインドクラフターに着想。英語・日本語・簡体字中�
 说明: 制作本模组时,我使用了Claude(AI)作为编程与翻译助手。创意工坊预览图以及自制的能力图标也是在Claude的协助下制作的。设计、测试与最终决定均由我本人完成。
 
 源代码: https://github.com/gharkz/PsiUserClass
+
+问题反馈: 系统菜单 > Mod > Bug reports > PSI User Class,复制报告后发布到 https://github.com/gharkz/elin-mods-support/issues 。
 [/quote]</description>
   <tags>General,Gameplay,Class,english,japanese,schinese</tags>
   <visibility>Public</visibility>
