@@ -54,6 +54,8 @@ namespace PsionClass.Support
         internal static Window Open(string title, List<UiRow> rows, float[] edges, float width = 760, float height = 560,
             List<(string label, Action click)> footer = null, bool floating = false, string footNote = null, List<(string label, Action click)> corner = null, float rowHeight = 32)
         {
+            // Opened from a context menu (System > Mod > ...): close the whole menu first, as the game does for its own windows.
+            if ((bool)EClass.ui.contextMenu.currentMenu) EClass.ui.contextMenu.currentMenu.Hide();
             var w = new Window { Rows = rows, Edges = edges, Width = width - 60, RowHeight = rowHeight };
             // Floating layers (like the inventory) leave map input alone: camera pan, right-click cancel, clicks.
             var layer = floating ? EClass.ui.layerFloat.AddLayer<LayerList>() : EClass.ui.AddLayer<LayerList>();
