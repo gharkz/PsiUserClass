@@ -228,6 +228,27 @@ namespace PsionClass
         internal static void OpenConfig() => SettingsUi.Open();
     }
 
+    // A free Telekinesis (Psion cost setting 0) still trains: the game only grants spell XP when the cast cost something,
+    // so grant what the natural cost would have earned. Psicraft then follows through PsicraftXp below.
+    [HarmonyPatch(typeof(Chara), nameof(Chara.UseAbility), new[] { typeof(Act), typeof(Card), typeof(Point), typeof(bool) })]
+    static class FreeTelekinesisStillTrains
+    {
+        static void Postfix(Chara __instance, Act a, bool __result)
+        {
+            try
+            {
+                var c = __instance;
+                if (!__result || a == null || a.id != PsionData.Telekinesis || !PsionData.IsPsion(c) || a.source.lvFactor <= 0) return;
+                if (a.GetCost(c).cost > 0) return; // paid: the game already granted the XP
+                Act.Cost natural;
+                PsionCombat.RawTkCost = true; try { natural = a.GetCost(c); } finally { PsionCombat.RawTkCost = false; }
+                if (natural.type != Act.CostType.MP || natural.cost <= 0) return;
+                c.ModExp(a.id, c.elements.GetSpellExp(c, a, 100));
+            }
+            catch (Exception e) { Plugin.Report(e); }
+        }
+    }
+
     // Psicraft XP mirrors the spell XP each power earns (success and fizzle alike).
     [HarmonyPatch(typeof(Card), nameof(Card.ModExp), new[] { typeof(int), typeof(int) })]
     static class PsicraftXp

@@ -9,7 +9,11 @@ namespace PsionClass
     internal static class PsiEdge
     {
         internal static readonly int[] LinkedSkills = { 255, 256, 257, 258, 259, 260, 261, 287, 288, 280, 281, 293 }; // crafts + lockpicking/stealing/disarm
-        static readonly Dictionary<int, Dictionary<int, int>> links = new Dictionary<int, Dictionary<int, int>>();
+        // What the trait has added, kept on each skill's own Element object: when the game rebuilds a character's skills
+        // (new game start, reload) the fresh Element starts at 0 here too, so the bookkeeping can never drift into a
+        // penalty (a per-character table once did: -2 crafting, -4 lockpicking on new characters).
+        sealed class Applied { public int N; }
+        static readonly System.Runtime.CompilerServices.ConditionalWeakTable<Element, Applied> links = new System.Runtime.CompilerServices.ConditionalWeakTable<Element, Applied>();
         static readonly System.Reflection.MethodInfo modLink = AccessTools.Method(typeof(ElementContainer), "ModLink");
 
         internal static int N(Chara c) => (int)Math.Floor(1.52 * Math.Log(c.elements.ValueWithoutLink(PsionData.Psicraft) + 1));
@@ -21,15 +25,18 @@ namespace PsionClass
             if (!PsionData.IsPsion(c)) return;
             int n = N(c);
             if (c.elements.ValueWithoutLink(PsionData.PsiEdge) != n) c.SetFeat(PsionData.PsiEdge, n, msg: false);
-            if (!links.TryGetValue(c.uid, out var have)) links[c.uid] = have = new Dictionary<int, int>();
             foreach (var s in LinkedSkills)
             {
-                int want = c.elements.HasBase(s) ? n : 0;
-                have.TryGetValue(s, out int cur);
-                if (want != cur) { modLink.Invoke(c.elements, new object[] { s, want - cur }); have[s] = want; }
+                var e = c.elements.GetElement(s);
+                int cur = e != null && links.TryGetValue(e, out var a) ? a.N : 0;
+                int want = e != null && c.elements.HasBase(s) ? n : 0;
+                if (want == cur) continue;
+                modLink.Invoke(c.elements, new object[] { s, want - cur });
+                e = c.elements.GetElement(s);
+                if (e != null) links.GetOrCreateValue(e).N = want;
             }
         }
-        internal static void Reset() => links.Clear(); // vLink isn't saved; start clean on each load
+        internal static void Reset() { } // kept for the load hook; per-Element tracking needs no clearing
     }
 
     [HarmonyPatch(typeof(Game), nameof(Game.Load))]
