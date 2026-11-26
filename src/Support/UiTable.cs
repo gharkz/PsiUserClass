@@ -56,6 +56,7 @@ namespace PsionClass.Support
         {
             // Opened from a context menu (System > Mod > ...): close the whole menu first, as the game does for its own windows.
             if ((bool)EClass.ui.contextMenu.currentMenu) EClass.ui.contextMenu.currentMenu.Hide();
+            Fit(ref width, ref height);
             var w = new Window { Rows = rows, Edges = edges, Width = width - 60, RowHeight = rowHeight };
             // Floating layers (like the inventory) leave map input alone: camera pan, right-click cancel, clicks.
             var layer = floating ? EClass.ui.layerFloat.AddLayer<LayerList>() : EClass.ui.AddLayer<LayerList>();
@@ -89,8 +90,19 @@ namespace PsionClass.Support
         }
 
         // New rows (and title, size) in an open window, without closing it: no flicker, scroll position kept.
+        // Small screens (e.g. 1366x768): shrink the window to the UI space actually available, keeping room for its
+        // title bar and frame; the list scrolls, so a shorter window loses nothing.
+        static void Fit(ref float width, ref float height)
+        {
+            float scale = EClass.ui.canvas != null && EClass.ui.canvas.scaleFactor > 0 ? EClass.ui.canvas.scaleFactor : 1f;
+            float maxW = Screen.width / scale - 60f, maxH = Screen.height / scale - 110f;
+            if (maxW > 300f) width = Mathf.Min(width, maxW);
+            if (maxH > 240f) height = Mathf.Min(height, maxH);
+        }
+
         internal static void Rebuild(Window w, string title, List<UiRow> rows, float[] edges, float width, float height)
         {
+            Fit(ref width, ref height);
             var layer = w.Layer;
             w.Rows = rows; w.Edges = edges; w.Width = width - 60;
             layer.SetHeader(title);
