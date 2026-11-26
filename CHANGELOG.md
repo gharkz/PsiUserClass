@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.7
+
+PSI User Class 0.2.7
+The Workshop download now includes the MIT license file. No gameplay changes.
+
+日本語
+ワークショップ版にMITライセンスファイルを同梱しました。ゲーム内容に変更はありません。
+
+简体中文
+创意工坊版本现已附带MIT许可证文件。游戏内容无变化。
+
+
 ## 0.2.6
 
 PSI User Class 0.2.6
