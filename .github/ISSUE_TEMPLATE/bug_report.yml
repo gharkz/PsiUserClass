@@ -1,0 +1,19 @@
+name: Bug report
+description: Something in PSI User Class isn't working as it should.
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: report
+    attributes:
+      label: Bug report
+      description: "In game: System menu > Mod > Bug reports > PSI User Class > Copy everything, then paste here."
+      render: text
+    validations:
+      required: false
