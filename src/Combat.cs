@@ -228,6 +228,21 @@ namespace PsionClass
         internal static void OpenConfig() => SettingsUi.Open();
     }
 
+    // Spell XP scales with the cast's mana cost (cost x 5 + 10). The Psion cost setting is a convenience, not a training
+    // penalty: Telekinesis XP is always worked out from its natural cost (success and fizzle alike).
+    [HarmonyPatch(typeof(ElementContainer), nameof(ElementContainer.GetSpellExp))]
+    static class TelekinesisXpFromNaturalCost
+    {
+        static void Postfix(ElementContainer __instance, Chara c, Element e, int costMod, ref int __result)
+        {
+            if (PsionCombat.RawTkCost || e == null || e.id != PsionData.Telekinesis || c == null || !c.HasElement(PsionData.FeatPsion)) return;
+            PsionCombat.RawTkCost = true;
+            try { __result = __instance.GetSpellExp(c, e, costMod); }
+            catch (Exception ex) { Plugin.Report(ex); }
+            finally { PsionCombat.RawTkCost = false; }
+        }
+    }
+
     // A free Telekinesis (Psion cost setting 0) still trains: the game only grants spell XP when the cast cost something,
     // so grant what the natural cost would have earned. Psicraft then follows through PsicraftXp below.
     [HarmonyPatch(typeof(Chara), nameof(Chara.UseAbility), new[] { typeof(Act), typeof(Card), typeof(Point), typeof(bool) })]

@@ -3,13 +3,13 @@
 ## 0.2.6
 
 PSI User Class 0.2.6
-Fixed Psionic Edge sometimes giving new characters negative crafting and lockpicking skills (e.g. -2 crafting, -4 lockpicking) instead of its bonus. A free Telekinesis (mana cost set to 0) now still earns spell and Psicraft experience.
+Fixed Psionic Edge sometimes giving new characters negative crafting and lockpicking skills (e.g. -2 crafting, -4 lockpicking) instead of its bonus. Telekinesis experience (and so Psicraft experience) is now based on its natural mana cost, whatever the Psion cost setting is: a cheaper or free Telekinesis no longer slows your progress.
 
 日本語
-サイオニック・エッジが新しいキャラクターの製作・解錠スキルにボーナスではなくマイナス(製作-2、解錠-4など)を与えることがある不具合を修正。テレキネシスのマナ消費を0にしていても、魔法とサイクラフトの経験値を得られるようになりました。
+サイオニック・エッジが新しいキャラクターの製作・解錠スキルにボーナスではなくマイナス(製作-2、解錠-4など)を与えることがある不具合を修正。テレキネシス(とサイクラフト)の経験値は、サイオン設定のマナ消費にかかわらず本来のマナ消費で計算されるようになりました。消費を下げたり0にしても成長が遅くなりません。
 
 简体中文
-修复灵能锋刃有时让新角色的制作与开锁技能变为负值(如制作-2、开锁-4)而非加成的问题。念动术魔力消耗设为0时，现在也能获得法术与灵能术经验。
+修复灵能锋刃有时让新角色的制作与开锁技能变为负值(如制作-2、开锁-4)而非加成的问题。念动术(以及灵能术)的经验现在按其原本的魔力消耗计算，与灵能者的消耗设置无关：降低或免除消耗不再拖慢成长。
 
 
 ## 0.2.5
