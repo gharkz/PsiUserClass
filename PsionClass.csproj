@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework><LangVersion>latest</LangVersion>
-    <Authors>gharkz</Authors><Version>0.2.7</Version>
+    <Authors>gharkz</Authors><Version>0.2.8</Version>
     <AssemblyName>PsionClass</AssemblyName><RootNamespace>PsionClass</RootNamespace>
     <ElinGamePath Condition="'$(ElinGamePath)' == ''">X:/SteamLibrary/steamapps/common/Elin</ElinGamePath>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
@@ -31,6 +31,7 @@
     <Reference Include="$(ElinGamePath)/BepInEx/core/0Harmony.dll" Private="false" />
     <None Include="LangMod/**/*.txt" CopyToOutputDirectory="PreserveNewest" />
     <None Include="assets/psishield.png;assets/psiteleport.png;assets/psihurl.png;assets/psistrike.png" CopyToOutputDirectory="PreserveNewest" LinkBase="assets" />
-    <None Include="package.xml;preview.jpg;LICENSE" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="package.xml;preview.jpg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="LICENSE" Link="LICENSE.txt" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

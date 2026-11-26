@@ -7,7 +7,7 @@ namespace PsionClass
     [BepInPlugin(Id, "Psion", Version)]
     public sealed class Plugin : BaseUnityPlugin
     {
-        public const string Id = "gharkz.elin.psion", Version = "0.2.7";
+        public const string Id = "gharkz.elin.psion", Version = "0.2.8";
         internal static Plugin Instance;
         Harmony harmony;
         bool failed;

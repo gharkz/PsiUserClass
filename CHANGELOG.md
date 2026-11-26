@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.8
+
+PSI User Class 0.2.8
+The license file in the Workshop download is now LICENSE.txt, so it opens directly on Windows. No gameplay changes.
+
+日本語
+ワークショップ版のライセンスファイルをLICENSE.txtにしました(Windowsでそのまま開けます)。ゲーム内容に変更はありません。
+
+简体中文
+创意工坊版本的许可证文件改为LICENSE.txt，可在Windows上直接打开。游戏内容无变化。
+
+
 ## 0.2.7
 
 PSI User Class 0.2.7
