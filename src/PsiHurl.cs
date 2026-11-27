@@ -29,7 +29,19 @@ public class ActPsiHurl : Spell
         var t = EClass.scene.mouseTarget.card;
         if (t != null && t != pc && Hurlable(pc, t)) t.pos.SetHighlight(2);
     }
-    public override bool IsHostileAct => true;
+    // Like vanilla Telekinesis: only hostile toward someone else. Hurling yourself, your own party/faction or your own
+    // items is lawful; hurling other creatures or NPC-owned items is a crime in towns. (Bystanders the flight hits still react natively.)
+    public override bool IsHostileAct
+    {
+        get
+        {
+            var cc = Act.CC;
+            var t = Act.TC ?? (cc != null && cc.IsPC ? EClass.scene?.mouseTarget?.card : null);
+            if (t == null) return false;
+            if (t is Chara ch) return ch != cc && !ch.IsPCFactionOrMinion;
+            return t.isNPCProperty;
+        }
+    }
 
     public override bool CanPerform()
     {

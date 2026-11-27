@@ -58,7 +58,7 @@ Distant, heavy and higher-level targets resist more often.
 
 <b>Telekinetic Control</b>
 
-* Rank 1 (Psicraft 5): your self-hurl collisions hurt half as much; when others hurl you, 10% less.
+* Rank 1 (Psicraft {PSION_TKC_LV1}): your self-hurl collisions hurt half as much; when others hurl you, 10% less.
 {PSION_TKC_RANK2}
 
 {PSION_TKC_ALLIES}
@@ -85,9 +85,9 @@ Telekinesis and kinetic powers are safe against them. In a Psion's hands, Teleki
 
 With practice, a Psion learns to touch dead minds without harm.
 
-* Necropathy (Psicraft 10): the dead no longer lash back.
-* Intermediate Necropathy (Psicraft 20): your mind reaches them at half strength.
-* Master Necropathy (Psicraft 30): your mind reaches them fully.
+* Necropathy (Psicraft {PSION_NECRO_LV1}): the dead no longer lash back.
+* Intermediate Necropathy (Psicraft {PSION_NECRO_LV2}): your mind reaches them at half strength.
+* Master Necropathy (Psicraft {PSION_NECRO_LV3}): your mind reaches them fully.
 
 Rare equipment is said to carry this gift as well.
 

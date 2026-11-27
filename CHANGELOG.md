@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.9
+
+PSI User Class 0.2.9
+Necropathy now costs 1 feat point per rank by default (was 1/2/3), like Telekinetic Control. The Psion settings can now change both feats' feat point cost and Psicraft level requirement per rank; the primer shows your levels. New option (off by default): trainers at Willow and Lumiest can train Psicraft for Psions. Otherwise Psicraft no longer appears at trainers. Psi-Hurl on yourself or your allies is no longer a crime in towns; anyone hit along the path still reacts as if you threw something at them.
+
+日本語
+ネクロパシーのフィートポイント消費を初期値でランクごとに1にしました(以前は1/2/3、念動制御と同じ)。サイオン設定で両特技のランクごとのフィートポイント消費と必要サイクラフトレベルを変更できます。入門書には設定したレベルが表示されます。新しいオプション(初期値オフ): ウィロウとルミエストのトレーナーがサイオンにサイクラフトを訓練できます。それ以外ではトレーナーにサイクラフトは表示されません。自分や味方へのサイハールは町で犯罪扱いされなくなりました。経路上でぶつかった相手は、物を投げつけられた時と同じく反応します。
+
+简体中文
+死灵感应的专长点数消耗默认改为每级1点(原为1/2/3,与念动控制相同)。灵能者设置现可更改两项专长每级的专长点数消耗与所需灵能术等级,入门书会显示你设置的等级。新选项(默认关闭):柳木堡与鲁米艾斯特的训练师可为灵能者训练灵能术。除此之外训练师不再列出灵能术。对自己或友方使用灵能投掷在城镇中不再视为犯罪;路径上被撞到的人仍会像被投掷物品一样作出反应。
+
+
 ## 0.2.8
 
 PSI User Class 0.2.8

@@ -40,6 +40,10 @@ namespace PsionClass
             bool live = pc != null && EClass.core.IsGameStarted;
             string X(float v) => "x" + v.ToString("0.##", CultureInfo.InvariantCulture);
             var d = new Dictionary<string, string>();
+            var necroLv = PowerConfig.FeatLevels(live ? pc : null, PsionData.FeatNecropathy);
+            var tkcLv = PowerConfig.FeatLevels(live ? pc : null, PsionData.FeatTkControl);
+            for (int i = 0; i < necroLv.Length; i++) d["{PSION_NECRO_LV" + (i + 1) + "}"] = necroLv[i].ToString();
+            for (int i = 0; i < tkcLv.Length; i++) d["{PSION_TKC_LV" + (i + 1) + "}"] = tkcLv[i].ToString();
             bool full = live && PsionCombat.HurlFull(pc);
             d["{PSION_HURL_FLIGHT}"] = full
                 ? UiText.Pick("It always flies the full 20 tiles (Psion settings).", "常に最大の20マス飛ぶ(サイオン設定)。", "始终飞行完整的20格(灵能者设置)。")
@@ -66,12 +70,12 @@ namespace PsionClass
             d["{PSION_TKC_ALLIES}"] = (a1 + a2).Trim();
             bool heavy = !live || PsionCombat.HeavyMatters(pc);
             d["{PSION_TKC_RANK2}"] = heavy
-                ? UiText.Pick("* Rank 2 (Psicraft 10): your self-hurl collisions don't hurt, except that passing through a creature whose " + PsionCombat.HeavyRule(pc, "EN") + " still lets 20% of the landing damage through; when others hurl you, 20% less.",
-                    "* ランク2(サイクラフト10): 自分を投げた時の衝突ダメージなし。ただし" + PsionCombat.HeavyRule(pc, "JP") + "の生物を通り抜けると、着地ダメージの20%は受ける。他者に投げられた時は20%減。",
-                    "* 等级2(灵能术10): 自我投掷不受碰撞伤害,但穿过" + PsionCombat.HeavyRule(pc, "CN") + "的生物时仍受20%的落地伤害;被他人投掷时减少20%。")
-                : UiText.Pick("* Rank 2 (Psicraft 10): your self-hurl collisions don't hurt at all; when others hurl you, 20% less.",
-                    "* ランク2(サイクラフト10): 自分を投げた時の衝突ダメージは一切なし。他者に投げられた時は20%減。",
-                    "* 等级2(灵能术10): 自我投掷完全不受碰撞伤害;被他人投掷时减少20%。");
+                ? UiText.Pick("* Rank 2 (Psicraft " + tkcLv[1] + "): your self-hurl collisions don't hurt, except that passing through a creature whose " + PsionCombat.HeavyRule(pc, "EN") + " still lets 20% of the landing damage through; when others hurl you, 20% less.",
+                    "* ランク2(サイクラフト" + tkcLv[1] + "): 自分を投げた時の衝突ダメージなし。ただし" + PsionCombat.HeavyRule(pc, "JP") + "の生物を通り抜けると、着地ダメージの20%は受ける。他者に投げられた時は20%減。",
+                    "* 等级2(灵能术" + tkcLv[1] + "): 自我投掷不受碰撞伤害,但穿过" + PsionCombat.HeavyRule(pc, "CN") + "的生物时仍受20%的落地伤害;被他人投掷时减少20%。")
+                : UiText.Pick("* Rank 2 (Psicraft " + tkcLv[1] + "): your self-hurl collisions don't hurt at all; when others hurl you, 20% less.",
+                    "* ランク2(サイクラフト" + tkcLv[1] + "): 自分を投げた時の衝突ダメージは一切なし。他者に投げられた時は20%減。",
+                    "* 等级2(灵能术" + tkcLv[1] + "): 自我投掷完全不受碰撞伤害;被他人投掷时减少20%。");
             int sc = live ? PsionCombat.StrikeCost(pc) : 12;
             d["{PSION_STRIKE_COST}"] = UiText.Pick("It costs a fixed " + sc + " mana.", "消費は固定" + sc + "マナ。", "固定消耗" + sc + "点魔力。");
             return d;

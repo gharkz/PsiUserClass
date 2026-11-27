@@ -123,8 +123,8 @@ namespace PsionClass
                 "不再受到不死者的精神反噬\n" +
                 "不再受到不死者的精神反噬,精神攻击对不死者有50%效果\n" +
                 "不再受到不死者的精神反噬,精神攻击对不死者有100%效果");
-            r.req = new[] { "psicraft", "10", "20", "30" };
-            r.cost = new[] { 1, 2, 3 };
+            r.req = FeatReq(PowerConfig.DefaultFeatLevels(FeatNecropathy)); // the player's setting is applied in RefreshLiveTexts
+            r.cost = PowerConfig.DefaultFeatCosts(FeatNecropathy); // the player's setting is applied in RefreshLiveTexts
             r.max = 3;
             r.geneSlot = -1;
             return r;
@@ -247,8 +247,8 @@ namespace PsionClass
                 "自分を投げた時の衝突ダメージ-100%(投げに巻き込んだ味方も、非常に重い相手は別),他者に投げられた時の衝突ダメージ-20%",
                 "自我投掷碰撞伤害-50%(你投掷中波及的友方同样),被他人投掷时碰撞伤害-10%\n" +
                 "自我投掷碰撞伤害-100%(你投掷中波及的友方同样;非常沉重的目标除外),被他人投掷时碰撞伤害-20%");
-            r.req = new[] { "psicraft", "5", "10" };
-            r.cost = new[] { 1, 1 };
+            r.req = FeatReq(PowerConfig.DefaultFeatLevels(FeatTkControl)); // the player's setting is applied in RefreshLiveTexts
+            r.cost = PowerConfig.DefaultFeatCosts(FeatTkControl); // the player's setting is applied in RefreshLiveTexts
             r.max = 2;
             r.geneSlot = -1;
             return r;
@@ -292,6 +292,9 @@ namespace PsionClass
             J.map[r.id] = r;
         }
 
+        // Feat req: the skill alias, then the level each rank needs.
+        static string[] FeatReq(int[] levels) => new[] { "psicraft" }.Concat(levels.Select(l => l.ToString())).ToArray();
+
         internal static bool IsPsion(Chara c) => c != null && c.job?.id == JobId;
 
         // Feat and power texts that quote Psion settings, rebuilt from the player's current settings
@@ -304,6 +307,13 @@ namespace PsionClass
                 var pc = EClass.core.IsGameStarted ? EClass.pc : null;
                 if (E == null || !E.map.ContainsKey(FeatTkControl)) return;
                 string X(float v) => "x" + v.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+                PsicraftTraining.Apply();
+                foreach (int feat in PowerConfig.FeatChains)
+                    if (E.map.TryGetValue(feat, out var fr))
+                    {
+                        fr.cost = PowerConfig.FeatCosts(pc, feat);
+                        fr.req = FeatReq(PowerConfig.FeatLevels(pc, feat));
+                    }
 
                 // Telekinetic Control: allies line only while that setting is on.
                 bool allies = pc == null || PsionCombat.TkControlAllies(pc);

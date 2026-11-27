@@ -42,6 +42,10 @@ namespace PsionClass
                     "更改能力前请先备份存档。重新开启能力会清除其法术储备。") },
                 new Row { Label = UiText.Pick("Class name (this language)", "クラス名(この言語)", "职业名称(当前语言)"), Value = ClassName.Current, Click = EditClassName },
                 new Row { Label = UiText.Pick("Get a new copy of the primer (once a day)", "入門書をもう一冊もらう(1日1回)", "再领取一本入门书(每天一次)"), Click = _ => NewPrimer() },
+                new Row { Label = UiText.Pick("Trainers at " + Town("lothria") + " and " + Town("lumiest") + " can train Psicraft (Psions only, for plat)",
+                    Town("lothria") + "と" + Town("lumiest") + "のトレーナーがサイクラフトを訓練できる(サイオンのみ、プラチナ硬貨)",
+                    Town("lothria") + "与" + Town("lumiest") + "的训练师可训练灵能术(仅限灵能者,需白金币)"), Checked = PsicraftTraining.On(pc),
+                    Click = r => { PsicraftTraining.Set(pc, !PsicraftTraining.On(pc)); r.Checked = PsicraftTraining.On(pc); if (r.Mark) r.Mark.gameObject.SetActive(r.Checked.Value); } },
                 new Row { Heading = true, Label = UiText.Pick("Telekinesis", "テレキネシス", "念动术") },
                 new Row { Label = UiText.Pick("Use a fixed mana cost (ignores spell level)", "固定マナ消費を使う(呪文レベル無関係)", "使用固定魔力消耗(不受法术等级影响)"), Checked = PsionCombat.TkFixedOn(pc),
                     Click = r => { PsionCombat.SetTkFixedOn(pc, !PsionCombat.TkFixedOn(pc)); r.Checked = PsionCombat.TkFixedOn(pc); if (r.Mark) r.Mark.gameObject.SetActive(r.Checked.Value); RefreshStates(); } },
@@ -101,6 +105,12 @@ namespace PsionClass
                     "碰撞伤害为骰值×(50%+每飞行一格25%):4格=150%,8格=250%,20格=550%。") },
                 new Row { Heading = true, Label = UiText.Pick("Psi-Strike", "サイストライク", "灵能打击") },
                 new Row { Label = UiText.Pick("Fixed mana cost", "固定マナ消費", "固定魔力消耗"), Value = PsionCombat.StrikeCost(pc) + " MP", Click = EditStrikeCost },
+                new Row { Heading = true, Label = UiText.Pick("Feat point cost per rank", "ランクごとのフィートポイント消費", "每级专长点数消耗") },
+                new Row { Label = FeatName(PsionData.FeatNecropathy), Value = FeatCostText(pc, PsionData.FeatNecropathy), Click = r => EditFeatCosts(r, PsionData.FeatNecropathy) },
+                new Row { Label = FeatName(PsionData.FeatTkControl), Value = FeatCostText(pc, PsionData.FeatTkControl), Click = r => EditFeatCosts(r, PsionData.FeatTkControl) },
+                new Row { Heading = true, Label = UiText.Pick("Psicraft level requirement per rank", "ランクごとの必要サイクラフトレベル", "每级灵能术等级要求") },
+                new Row { Label = FeatName(PsionData.FeatNecropathy), Value = FeatLevelText(pc, PsionData.FeatNecropathy), Click = r => EditFeatLevels(r, PsionData.FeatNecropathy) },
+                new Row { Label = FeatName(PsionData.FeatTkControl), Value = FeatLevelText(pc, PsionData.FeatTkControl), Click = r => EditFeatLevels(r, PsionData.FeatTkControl) },
                 new Row { Group = 1, Heading = true, Label = UiText.Pick("Auto-combat Telekinesis", "自動戦闘でのテレキネシス", "自动战斗中的念动术") },
                 new Row { Group = 2, Label = UiText.Pick("Use", "使用", "使用"), Value = PsionCombat.Label(PsionCombat.Tk), Click = ChooseTkMode },
                 new Row { Group = 2, NeedsAuto = true, Label = UiText.Pick("Only when it deals collision damage", "衝突ダメージを与える時のみ", "仅在造成碰撞伤害时"), Checked = PsionCombat.DamageOnly(pc),
@@ -345,6 +355,55 @@ namespace PsionClass
             if (t.EndsWith("MP", StringComparison.OrdinalIgnoreCase)) t = t.Substring(0, t.Length - 2).Trim();
             if (!double.TryParse(t, NumberStyles.Float, CultureInfo.InvariantCulture, out v) && !double.TryParse(t, NumberStyles.Float, CultureInfo.CurrentCulture, out v)) return false;
             return !double.IsNaN(v) && !double.IsInfinity(v) && v >= 0 && v < 1000;
+        }
+
+        // Town names as the game shows them in the current language (Willow's zone id is "lothria").
+        static string Town(string id) => EClass.sources.zones.map.TryGetValue(id, out var z) ? z.GetName() : id;
+
+        static string FeatName(int feat) => EClass.sources.elements.map[feat].GetName().ToTitleCase();
+        static string FeatCostText(Chara pc, int feat) => string.Join(" / ", PowerConfig.FeatCosts(pc, feat));
+
+        static string FeatLevelText(Chara pc, int feat) => string.Join(" / ", PowerConfig.FeatLevels(pc, feat));
+
+        // Costs: one whole number 1-99 per rank (every rank costs at least 1).
+        static void EditFeatCosts(Row row, int feat) => EditPerRank(row, feat, PowerConfig.FeatCosts(EClass.pc, feat),
+            UiText.Pick("feat point cost", "フィートポイント消費", "专长点数消耗"), UiText.Pick("1-99 each", "各1～99", "每级1-99"),
+            UiText.Pick("whole numbers 1 to 99", "1～99の整数", "1至99的整数"),
+            v => v.All(x => x >= 1 && x <= 99), v => PowerConfig.SetFeatCosts(EClass.pc, feat, v), () => FeatCostText(EClass.pc, feat));
+
+        // Levels: one whole number 1-999 per rank, each at least the rank before.
+        static void EditFeatLevels(Row row, int feat) => EditPerRank(row, feat, PowerConfig.FeatLevels(EClass.pc, feat),
+            UiText.Pick("Psicraft level needed", "必要サイクラフト", "所需灵能术等级"), UiText.Pick("1-999, each rank at least the one before", "各1～999、前のランク以上", "每级1-999,不低于前一级"),
+            UiText.Pick("whole numbers 1 to 999, each at least the one before", "1～999の整数で前のランク以上", "1至999的整数,且不低于前一级"),
+            PowerConfig.ValidFeatLevels, v => PowerConfig.SetFeatLevels(EClass.pc, feat, v), () => FeatLevelText(EClass.pc, feat));
+
+        // One value per rank, separated by commas, slashes or spaces. Invalid input is dropped and the old values kept.
+        static void EditPerRank(Row row, int feat, int[] current, string what, string rule, string invalid, Func<int[], bool> valid, Action<int[]> save, Func<string> text)
+        {
+            int n = current.Length;
+            string ranks = n == 3 ? UiText.Pick("ranks 1, 2 and 3", "ランク1・2・3", "1、2、3级") : UiText.Pick("ranks 1 and 2", "ランク1・2", "1、2级");
+            string count = n == 3 ? UiText.Pick("three", "3つ", "三个") : UiText.Pick("two", "2つ", "两个");
+            string now = string.Join(",", current);
+            Modals.Input(UiText.Pick(FeatName(feat) + " " + what + " for " + ranks + " (" + rule + ", e.g. " + now + ")",
+                    FeatName(feat) + "の" + ranks + "の" + what + "(" + rule + "、例: " + now + ")",
+                    FeatName(feat) + ranks + "的" + what + "(" + rule + ",例如" + now + ")"),
+                now, (cancel, input) =>
+                {
+                    if (cancel) return;
+                    var parts = (input ?? "").Split(new[] { ',', '/', ' ', '、', '，' }, StringSplitOptions.RemoveEmptyEntries);
+                    var v = new int[n];
+                    bool ok = parts.Length == n;
+                    for (int i = 0; ok && i < n; i++) ok = int.TryParse(parts[i], out v[i]);
+                    if (!ok || !valid(v))
+                    {
+                        Msg.Say(UiText.Pick("Not valid (" + count + " " + invalid + "). Kept ", "無効な値です(" + invalid + "を" + count + ")。", "数值无效(" + count + invalid + ")。保留")
+                            + text() + UiText.Pick(".", "のままです。", "。"));
+                        return;
+                    }
+                    save(v);
+                    PsionData.RefreshLiveTexts();
+                    SetValue(row, text());
+                }, Dialog.InputType.Default);
         }
 
         static void EditStrikeCost(Row row)

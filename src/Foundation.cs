@@ -86,6 +86,45 @@ namespace PsionClass
             if (!d.Remove(id)) d.Add(id);
             c.SetStr(KeyAutoOff, d.Count == 0 ? null : string.Join(",", d));
         }
+        // Feat-point cost per rank of the Psion feat chains (player setting). Default 1 per rank; the Psicraft gates do the pacing.
+        // Every rank costs 1-99; a stored value outside that falls back to the default.
+        internal static readonly int[] FeatChains = { PsionData.FeatNecropathy, PsionData.FeatTkControl };
+        static string KeyFeatCost(int feat) => feat == PsionData.FeatNecropathy ? "psion_necro_costs" : "psion_feat_costs_" + feat;
+        internal static int[] DefaultFeatCosts(int feat) => Enumerable.Repeat(1, feat == PsionData.FeatNecropathy ? 3 : 2).ToArray();
+        internal static int[] FeatCosts(Chara c, int feat)
+        {
+            var r = DefaultFeatCosts(feat);
+            var p = (c?.GetStr(KeyFeatCost(feat)) ?? "").Split(',');
+            if (p.Length == r.Length)
+                for (int i = 0; i < r.Length; i++)
+                    if (int.TryParse(p[i].Trim(), out int v) && v >= 1 && v <= 99) r[i] = v;
+            return r;
+        }
+        internal static void SetFeatCosts(Chara c, int feat, int[] v) =>
+            c.SetStr(KeyFeatCost(feat), v.SequenceEqual(DefaultFeatCosts(feat)) ? null : string.Join(",", v));
+
+        // Psicraft (base) level each rank of those chains needs (player setting): 1-999, each rank at least the one before.
+        // A stored value that breaks those rules is dropped whole and the defaults used.
+        static string KeyFeatLevels(int feat) => "psion_feat_levels_" + feat;
+        internal static int[] DefaultFeatLevels(int feat) => feat == PsionData.FeatNecropathy ? new[] { 10, 20, 30 } : new[] { 5, 10 };
+        internal static bool ValidFeatLevels(int[] v)
+        {
+            for (int i = 0; i < v.Length; i++)
+                if (v[i] < 1 || v[i] > 999 || (i > 0 && v[i] < v[i - 1])) return false;
+            return true;
+        }
+        internal static int[] FeatLevels(Chara c, int feat)
+        {
+            var def = DefaultFeatLevels(feat);
+            var p = (c?.GetStr(KeyFeatLevels(feat)) ?? "").Split(',');
+            if (p.Length != def.Length) return def;
+            var r = new int[def.Length];
+            for (int i = 0; i < r.Length; i++)
+                if (!int.TryParse(p[i].Trim(), out r[i])) return def;
+            return ValidFeatLevels(r) ? r : def;
+        }
+        internal static void SetFeatLevels(Chara c, int feat, int[] v) =>
+            c.SetStr(KeyFeatLevels(feat), v.SequenceEqual(DefaultFeatLevels(feat)) ? null : string.Join(",", v));
         internal static int DefaultLevel(int id) => PsionData.Unlocks.First(u => u.id == id).lv;
         internal static int Level(Chara c, int id) => Levels(c).TryGetValue(id, out int lv) ? lv : DefaultLevel(id);
         internal static void SetLevel(Chara c, int id, int lv)
@@ -105,6 +144,34 @@ namespace PsionClass
             if (nowOff) { if (c.ability.Has(id)) c.ability.Remove(id); }
             else Powers.Grant(c);
             LayerAbility.Redraw();
+        }
+    }
+
+    // Psicraft at trainers: town "mind" trainers list it only when the player turned training on and the PC is a Psion.
+    // Otherwise the row carries the native "unused" tag, which keeps it off every trainer list (and out of skill books).
+    internal static class PsicraftTraining
+    {
+        const string Key = "psion_trainable";
+        internal static bool On(Chara c) => c?.GetStr(Key) == "1";
+        internal static void Set(Chara c, bool on) { c.SetStr(Key, on ? "1" : null); Apply(); }
+        internal static void Apply()
+        {
+            if (EClass.sources?.elements?.map == null || !EClass.sources.elements.map.TryGetValue(PsionData.Psicraft, out var r)) return;
+            var pc = EClass.core.IsGameStarted ? EClass.pc : null;
+            bool listed = pc != null && On(pc) && PsionData.IsPsion(pc);
+            var tags = (r.tag ?? new string[0]).Where(t => t != "unused");
+            r.tag = (listed ? tags : tags.Append("unused")).ToArray();
+        }
+    }
+
+    // Re-checked whenever a conversation opens, so a job change or a setting change always shows up at the trainer.
+    [HarmonyPatch(typeof(DramaCustomSequence), nameof(DramaCustomSequence.Build))]
+    static class PsicraftTrainerList
+    {
+        static void Prefix()
+        {
+            try { PsicraftTraining.Apply(); }
+            catch (Exception e) { Plugin.Report(e); }
         }
     }
 
