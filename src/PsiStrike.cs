@@ -8,15 +8,18 @@ public class ActPsiStrike : Spell
 {
     internal const int Range = 8;
     public override int PerformDistance => Range;
-    public override bool IsHostileAct => true;
+    public override bool IsHostileAct => !(Act.TC?.trait is TraitTrainingDummy);
 
     public override bool CanPerform()
     {
         var cc = Act.CC;
         if (cc == null) return false;
-        if (cc.IsPC && !(cc.ai is GoalCombat)) Act.TC = EClass.scene.mouseTarget.card;
+        if (cc.ai is AI_PsiPractice practice) Act.TC = practice.target; // training dummy loop
+        else if (cc.IsPC && !(cc.ai is GoalCombat)) Act.TC = EClass.scene.mouseTarget.card;
         var tc = Act.TC;
-        if (tc == null || !tc.isChara || tc == cc || !tc.IsAliveInCurrentZone) return false;
+        if (tc == null || tc == cc) return false;
+        bool dummy = !tc.isChara && tc.trait is TraitTrainingDummy && tc.ExistsOnMap; // practice like a melee swing
+        if (!dummy && (!tc.isChara || !tc.IsAliveInCurrentZone)) return false;
         int d = cc.Dist(tc);
         if (d > Range || !cc.CanSeeLos(tc)) return false;
         if (!cc.IsPC || cc.ai is GoalCombat)
@@ -52,7 +55,7 @@ public class ActPsiStrikeMelee : ActMelee
 {
     public override bool UseWeaponDist => false;
     public override int PerformDistance => ActPsiStrike.Range;
-    public override bool CanPerform() => Act.TC != null && Act.TC.IsAliveInCurrentZone && Act.CC.CanSeeLos(Act.TC);
+    public override bool CanPerform() => Act.TC != null && (Act.TC.IsAliveInCurrentZone || Act.TC.trait is TraitTrainingDummy) && Act.CC.CanSeeLos(Act.TC);
 }
 
 namespace PsionClass
@@ -93,7 +96,7 @@ namespace PsionClass
         {
             if (__instance.id != PsionData.PsiStrike || c == null) return;
             __result.type = Act.CostType.MP;
-            __result.cost = PsionCombat.StrikeCost(c);
+            __result.cost = PsionCombat.RawTkCost ? 12 : PsionCombat.StrikeCost(c); // raw: natural cost, for XP
         }
     }
 }

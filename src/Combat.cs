@@ -229,22 +229,28 @@ namespace PsionClass
     }
 
     // Spell XP scales with the cast's mana cost (cost x 5 + 10). The Psion cost setting is a convenience, not a training
-    // penalty: Telekinesis XP is always worked out from its natural cost (success and fizzle alike).
+    // penalty: Telekinesis and Psi-Strike XP is always worked out from their natural cost, and Psi-Hurl earns a
+    // natural-cost Telekinesis cast's XP (success and fizzle alike).
     [HarmonyPatch(typeof(ElementContainer), nameof(ElementContainer.GetSpellExp))]
     static class TelekinesisXpFromNaturalCost
     {
         static void Postfix(ElementContainer __instance, Chara c, Element e, int costMod, ref int __result)
         {
-            if (PsionCombat.RawTkCost || e == null || e.id != PsionData.Telekinesis || c == null || !c.HasElement(PsionData.FeatPsion)) return;
+            if (PsionCombat.RawTkCost || e == null || (e.id != PsionData.Telekinesis && e.id != PsionData.PsiHurl && e.id != PsionData.PsiStrike) || c == null || !c.HasElement(PsionData.FeatPsion)) return;
             PsionCombat.RawTkCost = true;
-            try { __result = __instance.GetSpellExp(c, e, costMod); }
+            try
+            {
+                // Psi-Hurl earns what a natural-cost Telekinesis cast earns (its XP goes to Telekinesis anyway).
+                var tk = e.id != PsionData.PsiHurl ? e : (__instance.GetElement(PsionData.Telekinesis) ?? Element.Create(PsionData.Telekinesis, e.vBase));
+                __result = __instance.GetSpellExp(c, tk, costMod);
+            }
             catch (Exception ex) { Plugin.Report(ex); }
             finally { PsionCombat.RawTkCost = false; }
         }
     }
 
     // A free Telekinesis (Psion cost setting 0) still trains: the game only grants spell XP when the cast cost something,
-    // so grant what the natural cost would have earned. Psicraft then follows through PsicraftXp below.
+    // so grant what the natural cost would have earned (a free Psi-Hurl earns a natural Telekinesis cast's XP). Psicraft then follows through PsicraftXp below.
     [HarmonyPatch(typeof(Chara), nameof(Chara.UseAbility), new[] { typeof(Act), typeof(Card), typeof(Point), typeof(bool) })]
     static class FreeTelekinesisStillTrains
     {
@@ -253,12 +259,14 @@ namespace PsionClass
             try
             {
                 var c = __instance;
-                if (!__result || a == null || a.id != PsionData.Telekinesis || !PsionData.IsPsion(c) || a.source.lvFactor <= 0) return;
+                if (!__result || a == null || (a.id != PsionData.Telekinesis && a.id != PsionData.PsiHurl && a.id != PsionData.PsiStrike) || !PsionData.IsPsion(c) || a.source.lvFactor <= 0) return;
                 if (a.GetCost(c).cost > 0) return; // paid: the game already granted the XP
+                var tk = a.id == PsionData.PsiHurl ? c.elements.GetElement(PsionData.Telekinesis) as Act : a;
+                if (tk == null) return;
                 Act.Cost natural;
-                PsionCombat.RawTkCost = true; try { natural = a.GetCost(c); } finally { PsionCombat.RawTkCost = false; }
+                PsionCombat.RawTkCost = true; try { natural = tk.GetCost(c); } finally { PsionCombat.RawTkCost = false; }
                 if (natural.type != Act.CostType.MP || natural.cost <= 0) return;
-                c.ModExp(a.id, c.elements.GetSpellExp(c, a, 100));
+                c.ModExp(tk.id, c.elements.GetSpellExp(c, tk, 100));
             }
             catch (Exception e) { Plugin.Report(e); }
         }
@@ -519,6 +527,49 @@ namespace PsionClass
                 if (TkCastWording.Tk) ref1 += tc.Dist(cc) <= 1 ? UiText.Pick(" (hurl)", "(投げ)", "(抛掷)") : UiText.Pick(" (pull)", "(引き寄せ)", "(拉近)");
             }
             catch (Exception e) { Plugin.Report(e); }
+        }
+    }
+}
+
+namespace PsionClass
+{
+    // Spell success: for a Psion's own powers, Psicraft stands in for Casting, whichever is higher (never both).
+    [HarmonyPatch(typeof(Chara), nameof(Chara.CalcCastingChance))]
+    static class PsicraftAsCasting
+    {
+        [ThreadStatic] static Element current;
+
+        static void Prefix(Element e) => current = e;
+        static void Finalizer() => current = null;
+
+        static System.Collections.Generic.IEnumerable<CodeInstruction> Transpiler(System.Collections.Generic.IEnumerable<CodeInstruction> code)
+        {
+            var evalue = AccessTools.Method(typeof(Card), nameof(Card.Evalue), new[] { typeof(int) });
+            var helper = AccessTools.Method(typeof(PsicraftAsCasting), nameof(CastingSkill));
+            var list = new System.Collections.Generic.List<CodeInstruction>(code);
+            bool done = false;
+            for (int i = 1; i < list.Count; i++)
+            {
+                if (!done && list[i].Calls(evalue) && list[i - 1].LoadsConstant(304))
+                {
+                    list[i] = new CodeInstruction(System.Reflection.Emit.OpCodes.Call, helper).WithLabels(list[i].labels);
+                    done = true;
+                }
+            }
+            if (!done) Plugin.Report(new Exception("PsicraftAsCasting: Casting read not found"));
+            return list;
+        }
+
+        static int CastingSkill(Card c, int ele)
+        {
+            int v = c.Evalue(ele);
+            try
+            {
+                if (current != null && c is Chara ch && Array.IndexOf(PsionCombat.PowerIds, current.id) >= 0 && PsionData.IsPsion(ch))
+                    v = Math.Max(v, ch.Evalue(PsionData.Psicraft));
+            }
+            catch (Exception e) { Plugin.Report(e); }
+            return v;
         }
     }
 }

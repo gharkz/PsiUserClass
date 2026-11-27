@@ -16,7 +16,7 @@ namespace PsionClass
                 canProgress = () => !isFail(),
                 onProgress = p =>
                 {
-                    if (p.progress % 3 != 0) return;
+                    // one cast per turn, like vanilla weapon practice
                     var act = ACT.dict.TryGetValue(EClass.sources.elements.map[actId].alias);
                     int cost = act?.GetCost(owner).cost ?? 0;
                     if (act == null || owner.mana.value < Math.Max(1, cost) || owner.stamina.value < 0 || !owner.CanSee(target)) { p.Cancel(); return; }
@@ -36,7 +36,7 @@ namespace PsionClass
             {
                 var pc = __instance;
                 if (!__result || !pc.IsPC || !PsionData.IsPsion(pc) || tc == null || !(tc.trait is TraitTrainingDummy)) return;
-                if (pc.ai is AI_PsiPractice || a.id != PsionData.Telekinesis) return; // TK only: like thrown weapons; spells stay manual as in vanilla
+                if (pc.ai is AI_PsiPractice || (a.id != PsionData.Telekinesis && a.id != PsionData.PsiStrike)) return; // TK and Psi-Strike (a melee swing): like weapon practice; spells stay manual as in vanilla
                 pc.SetAI(new AI_PsiPractice { target = tc, actId = a.id });
             }
             catch (Exception e) { Plugin.Report(e); }

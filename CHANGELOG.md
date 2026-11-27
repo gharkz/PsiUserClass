@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.10
+
+PSI User Class 0.2.10
+All Psicraft-unlocked powers now use your Casting or Psicraft skill for spell success, whichever is higher (not both). Psi-Hurl and Psi-Strike now always earn full experience whatever mana cost you set, even 0, like Telekinesis: Psi-Hurl earns what a natural-cost Telekinesis cast earns, Psi-Strike what its natural 12 MP earns. Psi-Strike can now be practiced on a training dummy: cast it on one and it repeats like Telekinesis practice (no crime in town). Training dummy practice for both now casts once per turn, as fast as weapon practice (was every 3 turns).
+
+日本語
+サイクラフトで解放される全能力の詠唱成功率に、詠唱とサイクラフトの高い方のスキルを使うようになりました(合算はしません)。サイハールとサイストライクは、テレキネシスと同じく設定したマナ消費(0でも)にかかわらず満額の経験値を得ます。サイハールは本来の消費のテレキネシス1回分、サイストライクは本来の12MP分です。サイストライクで訓練人形を練習できるようになりました。人形に使うとテレキネシスの練習のように繰り返します(町でも犯罪になりません)。両方の人形練習は武器の練習と同じく毎ターン行うようになりました(以前は3ターンごと)。
+
+简体中文
+所有由灵能术解锁的能力，施法成功率现采用施法与灵能术中较高的一项(不叠加)。灵能投掷与灵能打击现与念动术一样，无论设置的魔力消耗为多少(即使为0)都获得全额经验:灵能投掷获得一次原始消耗念动术的经验，灵能打击按其原始12MP计算。灵能打击现可对训练假人练习:对假人使用后会像念动术练习一样重复(在城镇中不算犯罪)。两者的假人练习现每回合施放一次，与武器练习一样快(原为每3回合)。
+
 ## 0.2.9
 
 PSI User Class 0.2.9
